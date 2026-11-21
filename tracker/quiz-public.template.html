@@ -47,6 +47,8 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outli
 .past summary::-webkit-details-marker{display:none}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:3px;background:var(--line)}
 .note{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:12px;font-size:13.5px;color:var(--muted)}
+.rec{display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:12px;border-radius:12px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600}
+.rec:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:20px;margin-top:20px;color:var(--muted)}
 </style>
@@ -56,7 +58,8 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outli
   <h1>Dio: Quiz ประจำวัน</h1>
   <div class="sub">อัปเดตทุกเช้า · ข้อมูลล่าสุด <span id="gen"></span></div>
   <div class="legend"><span><i class="dot" style="background:var(--pass)"></i>ผ่าน: answers correctly on his own</span><span><i class="dot" style="background:var(--partial)"></i>บางส่วน: needs a hint or only partly right</span><span><i class="dot" style="background:var(--fail)"></i>ยังไม่ได้: can't do it yet</span></div>
-  <div class="note">Results tapped here are saved only on this phone. To get them into Dio's tracker, tap "คัดลอกผล" and send the text to Claude, or tap them on the claude.ai page instead.</div>
+  <div class="note">This page is for reading the questions. Record results on the claude.ai page, and Claude pulls them into the tracker every morning.</div>
+  <a class="rec" href="https://claude.ai/artifact/BMng2aatzqUFZxLUSFiunE" target="_blank" rel="noopener">บันทึกผลที่ claude.ai →</a>
   <div id="list"></div>
 </div>
 <script>
@@ -79,7 +82,7 @@ function summary(q){
 function dayHtml(q, open){
   const res = store[q.date] || {};
   const dots = q.items.map((_,i) => `<i class="dot" style="background:${res[i]?`var(--${res[i]})`:"var(--line)"}"></i>`).join("");
-  const head = `<h2>${esc(thDate(q.date))}</h2><span class="score">${dots} ${Object.keys(res).length}/${q.items.length}</span>`;
+  const head = `<h2>${esc(thDate(q.date))}</h2><span class="score">${q.items.length} ข้อ</span>`;
   const body = `<div class="items">${q.items.map((it,i) => `<div class="item">
       <div class="meta"><span class="chip">${esc(it.subject)}</span>${esc(it.topicName)}</div>
       <div class="q">${esc(it.question)}</div>
@@ -87,10 +90,8 @@ function dayHtml(q, open){
       <details><summary>ดูเฉลย / ผ่านเมื่อ</summary>
         <div class="ans"><b>เฉลย:</b> ${esc(it.answer)}</div>
         ${it.passIf ? `<div class="ans"><b>ถือว่าผ่านเมื่อ:</b> ${esc(it.passIf)}</div>` : ""}</details>
-      <div class="marks" role="group" aria-label="ผลข้อ ${i+1}">${Object.entries(RES).map(([k,v]) =>
-        `<button type="button" data-d="${esc(q.date)}" data-i="${i}" data-r="${k}" class="${res[i]===k?"on":""}" aria-pressed="${res[i]===k}">${v}</button>`).join("")}</div>
     </div>`).join("")}</div>
-    <div class="copyrow"><button type="button" class="copy" data-copy="${esc(q.date)}">คัดลอกผล</button><span class="status" id="st-${esc(q.date)}" role="status" aria-live="polite"></span></div>`;
+`;
   return open ? `<section class="day"><div class="dayhead">${head}</div>${body}</section>`
               : `<details class="day past" data-d="${esc(q.date)}"><summary class="dayhead">${head}</summary>${body}</details>`;
 }
