@@ -205,17 +205,58 @@ def cmd_build(a):
     export_artifact()
 
 
+def docs_passcode():
+    import os
+    p = os.environ.get("DOCS_PASSCODE") or (
+        (ROOT / ".docs-passcode").read_text().strip() if (ROOT / ".docs-passcode").exists() else "")
+    if not p:
+        sys.exit("docs: set DOCS_PASSCODE or write the passcode to tracker/.docs-passcode (gitignored)")
+    return p
+
+
+def encrypt_page(plain, dest, title, heading, passcode):
+    """Encrypt a full HTML page behind the passcode gate (tracker/encrypt.mjs + gate.template.html)."""
+    import os, subprocess
+    gate = (ROOT / "gate.template.html").read_text()
+    gate = gate.replace("<title>SSIS P1 Topic Map</title>", f"<title>{html.escape(title)}</title>") \
+               .replace("<h1>SSIS P1: แผนที่หัวข้อการเรียน</h1>", f"<h1>{html.escape(heading)}</h1>")
+    tmp_gate = ROOT / "publish" / "gate.tmp.html"
+    tmp_gate.parent.mkdir(exist_ok=True)
+    tmp_gate.write_text(gate)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["node", str(ROOT / "encrypt.mjs"), str(plain), str(tmp_gate), str(dest)],
+                   check=True, env={**os.environ, "DOCS_PASSCODE": passcode})
+
+
+def cmd_quiz_docs(a):
+    """docs/quiz/ for GitHub Pages: the last 14 days of quiz QUESTIONS (no results, no notes),
+    encrypted with the same passcode. Input = a folder of quiz JSON files exported from the claude.ai page
+    (ArtifactData list … out_dir=tracker/publish/quizdb)."""
+    src = Path(a.src)
+    quizzes = []
+    for f in sorted(src.rglob("*.json")):
+        q = json.load(open(f))
+        if isinstance(q, dict) and "date" in q and "items" in q:
+            keep = ("topicId", "subject", "topicName", "question", "parentHow", "answer", "passIf")
+            quizzes.append({"date": q["date"], "items": [{k: it.get(k, "") for k in keep} for it in q["items"]]})
+    quizzes = sorted(quizzes, key=lambda q: q["date"], reverse=True)[:14]
+    data = {"generated": datetime.date.today().isoformat(), "quizzes": quizzes}
+    page = (ROOT / "quiz-public.template.html").read_text().replace(
+        "/*__QUIZZES__*/null", json.dumps(data, ensure_ascii=False).replace("</", "<\\/"))
+    plain = ROOT / "publish" / "quiz-plain.html"
+    plain.parent.mkdir(exist_ok=True)
+    plain.write_text(page)
+    encrypt_page(plain, ROOT.parent / "docs" / "quiz" / "index.html", "Dio Daily Quiz", "Dio: Quiz ประจำวัน", docs_passcode())
+    print(f"wrote docs/quiz/index.html ({len(quizzes)} days, no results)")
+
+
 def cmd_docs(a):
     """docs/ for GitHub Pages (public): the graph with NO personal data.
     It reads ssis-map.json only (what the school teaches), never progress.json."""
     topics, prereqs, smap, _ = load()
     mapped = {t for u in smap["units"] for t in u["topics"]}
     fake = {"topics": {t: {"status": "introduced"} for t in mapped}, "log": []}
-    import os, subprocess
-    passcode = os.environ.get("DOCS_PASSCODE") or (
-        (ROOT / ".docs-passcode").read_text().strip() if (ROOT / ".docs-passcode").exists() else "")
-    if not passcode:
-        sys.exit("docs: set DOCS_PASSCODE or write the passcode to tracker/.docs-passcode (gitignored)")
+    passcode = docs_passcode()
     out = ROOT.parent / "docs"
     out.mkdir(exist_ok=True)
     plain = ROOT / "publish" / "docs-plain.html"   # gitignored; only the encrypted copy goes to docs/
@@ -225,7 +266,7 @@ def cmd_docs(a):
     swaps = [
         ("<title>Dio Topic Graph</title>", "<title>SSIS P1 Topic Map</title>"),
         ("Dio: แผนที่หัวข้อการเรียน", "SSIS P1: แผนที่หัวข้อการเรียน"),
-        (' <a href="dashboard.html">← กลับไป dashboard</a>', ' Built on the <a href="https://github.com/withmarbleapp/os-taxonomy">Marble taxonomy</a> (CC BY-SA 4.0).'),
+        (' <a href="dashboard.html">← กลับไป dashboard</a>', ' Built on the <a href="https://github.com/withmarbleapp/os-taxonomy">Marble taxonomy</a> (CC BY-SA 4.0). <a href="quiz/">Quiz ประจำวัน →</a>'),
         ('สีตามสถานะ Dio', 'สีตาม SSIS P1'),
         ('แสดงเฉพาะหัวข้อที่ Dio ผ่าน/กำลังเรียน', 'แสดงเฉพาะหัวข้อที่ SSIS P1 สอน (T1)'),
         ('introduced: {th:"เพิ่งเรียน"', 'introduced: {th:"สอนใน SSIS P1 (T1)"'),
@@ -237,8 +278,7 @@ def cmd_docs(a):
             sys.exit(f"docs: template text not found: {old!r}")
         html_ = html_.replace(old, new)
     plain.write_text(html_)
-    subprocess.run(["node", str(ROOT / "encrypt.mjs"), str(plain), str(ROOT / "gate.template.html"), str(out / "index.html")],
-                   check=True, env={**os.environ, "DOCS_PASSCODE": passcode})
+    encrypt_page(plain, out / "index.html", "SSIS P1 Topic Map", "SSIS P1: แผนที่หัวข้อการเรียน", passcode)
     (out / ".nojekyll").write_text("")
     print(f"wrote {out / 'index.html'}  ({len(mapped)} SSIS-mapped topics, no progress data)")
 
@@ -399,6 +439,7 @@ def main():
     p = sp.add_parser("next"); p.set_defaults(f=cmd_next)
     p = sp.add_parser("build"); p.set_defaults(f=cmd_build)
     p = sp.add_parser("docs"); p.set_defaults(f=cmd_docs)
+    p = sp.add_parser("quiz-docs"); p.add_argument("src", nargs="?", default=str(ROOT / "publish" / "quizdb")); p.set_defaults(f=cmd_quiz_docs)
     p = sp.add_parser("quiz-pick"); p.add_argument("--n", type=int, default=3); p.add_argument("--date"); p.set_defaults(f=cmd_quiz_pick)
     p = sp.add_parser("quiz-asked"); p.add_argument("date"); p.add_argument("topics", nargs="+"); p.set_defaults(f=cmd_quiz_asked)
     p = sp.add_parser("quiz-record"); p.add_argument("date"); p.add_argument("topic"); p.add_argument("result")

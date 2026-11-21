@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Dio Daily Quiz</title>
+<style>
+:root{
+  --bg:#f6f5f1;--card:#ffffff;--ink:#1f1f1c;--muted:#6c6a63;--line:#e3e0d8;--accent:#2f5d9a;
+  --pass:#2f8a5c;--partial:#d0912a;--fail:#c2463c;--chip:#eeece6;--q:#fbfaf6;color-scheme:light
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141413;--card:#1f1f1d;--ink:#ecebe6;--muted:#a3a199;--line:#36352f;--accent:#8db4ea;
+  --pass:#4bb07c;--partial:#e0a640;--fail:#e06a5f;--chip:#2b2a27;--q:#252522;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Sukhumvit Set","Noto Sans Thai",system-ui,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding-block:max(20px,env(safe-area-inset-top,0px)) 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:23px;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:13.5px}
+.day{margin-top:22px}
+.dayhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.dayhead h2{font-size:17px;margin:0}
+.score{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.items{display:grid;gap:12px;margin-top:10px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--muted)}
+.chip{background:var(--chip);border-radius:6px;padding:1px 7px;color:var(--ink)}
+.q{background:var(--q);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0;font-size:19px;line-height:1.5;white-space:pre-wrap}
+.lbl{font-size:12px;letter-spacing:.04em;color:var(--muted);margin-top:8px}
+.how{font-size:14.5px;white-space:pre-wrap}
+details{margin-top:8px}
+summary{cursor:pointer;color:var(--accent);font-size:14px}
+.ans{font-size:15px;margin-top:6px;white-space:pre-wrap}
+.marks{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.marks button,.copy{flex:1 1 90px;min-height:44px;border-radius:10px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:15px;cursor:pointer}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.marks button[data-r="pass"].on{background:var(--pass);border-color:var(--pass);color:#fff}
+.marks button[data-r="partial"].on{background:var(--partial);border-color:var(--partial);color:#1f1f1c}
+.marks button[data-r="fail"].on{background:var(--fail);border-color:var(--fail);color:#fff}
+.copyrow{display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap}
+.copy{flex:0 0 auto;padding:0 16px;background:var(--accent);border-color:var(--accent);color:#fff}
+.status{font-size:13px;color:var(--muted)}
+.copytext{width:100%;font:inherit;font-size:14px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);padding:8px;margin-top:8px}
+.past summary.dayhead{list-style:none;color:var(--ink)}
+.past summary::-webkit-details-marker{display:none}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:3px;background:var(--line)}
+.note{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:12px;font-size:13.5px;color:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:20px;margin-top:20px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Dio: Quiz ประจำวัน</h1>
+  <div class="sub">อัปเดตทุกเช้า · ข้อมูลล่าสุด <span id="gen"></span></div>
+  <div class="legend"><span><i class="dot" style="background:var(--pass)"></i>ผ่าน: answers correctly on his own</span><span><i class="dot" style="background:var(--partial)"></i>บางส่วน: needs a hint or only partly right</span><span><i class="dot" style="background:var(--fail)"></i>ยังไม่ได้: can't do it yet</span></div>
+  <div class="note">Results tapped here are saved only on this phone. To get them into Dio's tracker, tap "คัดลอกผล" and send the text to Claude, or tap them on the claude.ai page instead.</div>
+  <div id="list"></div>
+</div>
+<script>
+const Q = /*__QUIZZES__*/null;
+const RES = {pass:"ผ่าน", partial:"บางส่วน", fail:"ยังไม่ได้"};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const KEY = "dio-quiz-results";
+let store = {};
+try { store = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch { store = {}; }
+const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch {} };
+document.getElementById("gen").textContent = Q.generated;
+
+const thDate = iso => { try { return new Date(iso + "T00:00:00").toLocaleDateString("th-TH", {weekday:"long", day:"numeric", month:"short"}); } catch { return iso; } };
+
+function summary(q){
+  const res = store[q.date] || {};
+  return `Dio quiz ${q.date}\n` + q.items.map((it,i) => `${i+1}) ${it.topicId} ${it.topicName}: ${res[i] ? res[i] + " (" + RES[res[i]] + ")" : "ยังไม่ได้ถาม"}`).join("\n");
+}
+
+function dayHtml(q, open){
+  const res = store[q.date] || {};
+  const dots = q.items.map((_,i) => `<i class="dot" style="background:${res[i]?`var(--${res[i]})`:"var(--line)"}"></i>`).join("");
+  const head = `<h2>${esc(thDate(q.date))}</h2><span class="score">${dots} ${Object.keys(res).length}/${q.items.length}</span>`;
+  const body = `<div class="items">${q.items.map((it,i) => `<div class="item">
+      <div class="meta"><span class="chip">${esc(it.subject)}</span>${esc(it.topicName)}</div>
+      <div class="q">${esc(it.question)}</div>
+      ${it.parentHow ? `<div class="lbl">วิธีถาม</div><div class="how">${esc(it.parentHow)}</div>` : ""}
+      <details><summary>ดูเฉลย / ผ่านเมื่อ</summary>
+        <div class="ans"><b>เฉลย:</b> ${esc(it.answer)}</div>
+        ${it.passIf ? `<div class="ans"><b>ถือว่าผ่านเมื่อ:</b> ${esc(it.passIf)}</div>` : ""}</details>
+      <div class="marks" role="group" aria-label="ผลข้อ ${i+1}">${Object.entries(RES).map(([k,v]) =>
+        `<button type="button" data-d="${esc(q.date)}" data-i="${i}" data-r="${k}" class="${res[i]===k?"on":""}" aria-pressed="${res[i]===k}">${v}</button>`).join("")}</div>
+    </div>`).join("")}</div>
+    <div class="copyrow"><button type="button" class="copy" data-copy="${esc(q.date)}">คัดลอกผล</button><span class="status" id="st-${esc(q.date)}" role="status" aria-live="polite"></span></div>`;
+  return open ? `<section class="day"><div class="dayhead">${head}</div>${body}</section>`
+              : `<details class="day past" data-d="${esc(q.date)}"><summary class="dayhead">${head}</summary>${body}</details>`;
+}
+
+let openPast = new Set();
+function render(){
+  const list = document.getElementById("list");
+  list.querySelectorAll("details.past").forEach(el => el.open ? openPast.add(el.dataset.d) : openPast.delete(el.dataset.d));
+  list.innerHTML = Q.quizzes.length ? Q.quizzes.map((q,i) => dayHtml(q, i === 0)).join("") : `<div class="empty">No quiz yet. New questions are added every morning.</div>`;
+  list.querySelectorAll("details.past").forEach(el => { if (openPast.has(el.dataset.d)) el.open = true; });
+}
+
+document.addEventListener("click", async e => {
+  const b = e.target.closest(".marks button");
+  if (b){
+    const r = (store[b.dataset.d] ||= {});
+    if (r[b.dataset.i] === b.dataset.r) delete r[b.dataset.i]; else r[b.dataset.i] = b.dataset.r;
+    persist(); render(); return;
+  }
+  const c = e.target.closest("[data-copy]");
+  if (c){
+    const q = Q.quizzes.find(x => x.date === c.dataset.copy), st = document.getElementById("st-" + q.date), text = summary(q);
+    try { await navigator.clipboard.writeText(text); st.textContent = "คัดลอกแล้ว ส่งให้ Claude ได้เลย"; }
+    catch {
+      st.textContent = "กดค้างที่ข้อความด้านล่างเพื่อคัดลอก";
+      if (!c.parentElement.querySelector("textarea")){ const t = document.createElement("textarea"); t.className = "copytext"; t.rows = 4; t.readOnly = true; t.value = text; c.parentElement.appendChild(t); t.select(); }
+    }
+  }
+});
+render();
+</script>
+</body>
+</html>
