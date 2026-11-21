@@ -1,0 +1,145 @@
+<title>Dio Daily Quiz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one narrow column. Today's quiz is open on top, past days collapse below. */
+:root{
+  --bg:#f6f5f1;--card:#ffffff;--ink:#1f1f1c;--muted:#6c6a63;--line:#e3e0d8;--accent:#2f5d9a;--accent-ink:#ffffff;
+  --pass:#2f8a5c;--partial:#d0912a;--fail:#c2463c;--chip:#eeece6;--q:#fbfaf6;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141413;--card:#1f1f1d;--ink:#ecebe6;--muted:#a3a199;--line:#36352f;--accent:#8db4ea;--accent-ink:#10233b;
+  --pass:#4bb07c;--partial:#e0a640;--fail:#e06a5f;--chip:#2b2a27;--q:#252522;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141413;--card:#1f1f1d;--ink:#ecebe6;--muted:#a3a199;--line:#36352f;--accent:#8db4ea;--accent-ink:#10233b;
+  --pass:#4bb07c;--partial:#e0a640;--fail:#e06a5f;--chip:#2b2a27;--q:#252522;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Sukhumvit Set","Noto Sans Thai",system-ui,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding-block:24px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:24px;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:13.5px}
+.day{margin-top:22px}
+.dayhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.dayhead h2{font-size:17px;margin:0}
+.score{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.items{display:grid;gap:12px;margin-top:10px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--muted)}
+.chip{background:var(--chip);border-radius:6px;padding:1px 7px;color:var(--ink)}
+.q{background:var(--q);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0;font-size:19px;line-height:1.5;white-space:pre-wrap}
+.lbl{font-size:12px;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;margin-top:8px}
+.how,.pass{font-size:14.5px;white-space:pre-wrap}
+details{margin-top:8px}
+summary{cursor:pointer;color:var(--accent);font-size:14px}
+.ans{font-size:15px;margin-top:6px;white-space:pre-wrap}
+.marks{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.marks button{flex:1 1 90px;min-height:44px;border-radius:10px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:15px;cursor:pointer}
+.marks button:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.marks button[data-r="pass"].on{background:var(--pass);border-color:var(--pass);color:#fff}
+.marks button[data-r="partial"].on{background:var(--partial);border-color:var(--partial);color:#1f1f1c}
+.marks button[data-r="fail"].on{background:var(--fail);border-color:var(--fail);color:#fff}
+textarea{width:100%;min-height:64px;margin-top:10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:15px;padding:8px 10px}
+.status{font-size:13px;color:var(--muted);min-height:1.4em;margin-top:6px}
+.past summary.dayhead{list-style:none;color:var(--ink)}
+.past summary::-webkit-details-marker{display:none}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:3px;background:var(--line)}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:20px;margin-top:20px;color:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
+</style>
+
+<div class="wrap">
+  <h1>Dio: Quiz ประจำวัน</h1>
+  <div class="sub">3 short questions a day to spot-check foundations Dio should already have. Ask the questions, then tap the result. Claude records it in the tracker every morning.</div>
+  <div class="legend"><span><i class="dot" style="background:var(--pass)"></i>ผ่าน: answers correctly on his own</span><span><i class="dot" style="background:var(--partial)"></i>บางส่วน: needs a hint or only partly right</span><span><i class="dot" style="background:var(--fail)"></i>ยังไม่ได้: can't do it yet</span></div>
+  <div id="list"><div class="empty" id="loading">กำลังโหลด quiz…</div></div>
+</div>
+
+<script>
+const RES = {pass:"ผ่าน", partial:"บางส่วน", fail:"ยังไม่ได้"};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const list = document.getElementById("list");
+let db = null, docs = [], saving = {};
+
+function thDate(iso){
+  try { return new Date(iso + "T00:00:00").toLocaleDateString("th-TH", {weekday:"long", day:"numeric", month:"short"}); } catch { return iso; }
+}
+
+function itemHtml(day, it, i, res){
+  const r = res[i] || "";
+  return `<div class="item">
+    <div class="meta"><span class="chip">${esc(it.subject)}</span>${esc(it.topicName)}</div>
+    <div class="q">${esc(it.question)}</div>
+    ${it.parentHow ? `<div class="lbl">วิธีถาม</div><div class="how">${esc(it.parentHow)}</div>` : ""}
+    <details><summary>ดูเฉลย / ผ่านเมื่อ</summary>
+      <div class="ans"><b>เฉลย:</b> ${esc(it.answer)}</div>
+      ${it.passIf ? `<div class="ans"><b>ถือว่าผ่านเมื่อ:</b> ${esc(it.passIf)}</div>` : ""}
+    </details>
+    <div class="marks" role="group" aria-label="ผลข้อ ${i+1}">
+      ${Object.entries(RES).map(([k,v]) => `<button type="button" data-day="${esc(day.id)}" data-i="${i}" data-r="${k}" class="${r===k?"on":""}" aria-pressed="${r===k}">${v}</button>`).join("")}
+    </div>
+  </div>`;
+}
+
+function dayHtml(d, open){
+  const q = d.data(), res = q.results || {}, n = (q.items||[]).length;
+  const done = Object.keys(res).length;
+  const dots = (q.items||[]).map((_,i) => `<i class="dot" style="background:${res[i]?`var(--${res[i]})`:"var(--line)"}"></i>`).join("");
+  const head = `<div class="dayhead"><h2>${esc(thDate(q.date || d.id))}</h2><span class="score">${dots} ${done}/${n} บันทึกแล้ว</span></div>`;
+  const body = `<div class="items">${(q.items||[]).map((it,i) => itemHtml(d, it, i, res)).join("")}</div>
+    <textarea id="note-${esc(d.id)}" data-day="${esc(d.id)}" placeholder="บันทึกเพิ่มเติม (ไม่บังคับ) เช่น ตอบช้า, สับสน z กับ zh">${esc(q.note || "")}</textarea>
+    <div class="status" id="st-${esc(d.id)}" role="status" aria-live="polite"></div>`;
+  return open ? `<section class="day">${head}${body}</section>`
+              : `<details class="day past"><summary class="dayhead">${head.replace(/^<div class="dayhead">|<\/div>$/g,"")}</summary>${body}</details>`;
+}
+
+function render(){
+  if (!docs.length){
+    list.innerHTML = `<div class="empty">No quiz yet. Claude adds 3 new questions every morning at 07:00, and they'll show up here.</div>`;
+    return;
+  }
+  const openState = {};
+  list.querySelectorAll("details.past").forEach(el => { const t = el.querySelector("textarea"); if (t) openState[t.dataset.day] = el.open; });
+  list.innerHTML = docs.map((d,i) => dayHtml(d, i === 0)).join("");
+  list.querySelectorAll("details.past").forEach(el => { const t = el.querySelector("textarea"); if (t && openState[t.dataset.day]) el.open = true; });
+}
+
+async function save(dayId, patch, msg){
+  const st = document.getElementById("st-" + dayId);
+  if (!db){ if (st) st.textContent = "Can't save: open this page signed in to claude.ai"; return; }
+  if (saving[dayId]) await saving[dayId];
+  const p = db.doc("quizzes/" + dayId).update(patch);
+  saving[dayId] = p.catch(() => {});
+  try { await p; if (st) st.textContent = msg; }
+  catch (e) { if (st) st.textContent = "บันทึกไม่สำเร็จ: " + (e && e.message ? e.message : "ลองใหม่อีกครั้ง"); }
+}
+
+list.addEventListener("click", e => {
+  const b = e.target.closest(".marks button"); if (!b) return;
+  const d = docs.find(x => x.id === b.dataset.day); if (!d) return;
+  const res = {...(d.data().results || {})};
+  if (res[b.dataset.i] === b.dataset.r) delete res[b.dataset.i]; else res[b.dataset.i] = b.dataset.r;
+  b.parentElement.querySelectorAll("button").forEach(x => { const on = x === b && res[b.dataset.i] === x.dataset.r; x.classList.toggle("on", on); x.setAttribute("aria-pressed", on); });
+  save(d.id, {results: res, checkedAt: new Date().toISOString()}, "บันทึกแล้ว ✓");
+});
+let noteTimer = {};
+list.addEventListener("input", e => {
+  const t = e.target.closest("textarea"); if (!t) return;
+  clearTimeout(noteTimer[t.dataset.day]);
+  noteTimer[t.dataset.day] = setTimeout(() => save(t.dataset.day, {note: t.value}, "บันทึกโน้ตแล้ว ✓"), 800);
+});
+
+(async () => {
+  const timer = setTimeout(() => { if (!docs.length) list.innerHTML = `<div class="empty">Couldn't load the quiz. Open this page while signed in to claude.ai.</div>`; }, 10000);
+  db = await window.claude?.use?.("db");
+  if (!db){ clearTimeout(timer); list.innerHTML = `<div class="empty">Couldn't connect to the quiz data. Open this page in claude.ai while signed in.</div>`; return; }
+  db.collection("quizzes").orderBy("date", "desc").limit(30).onSnapshot(snap => {
+    clearTimeout(timer);
+    const focused = document.activeElement && document.activeElement.tagName === "TEXTAREA";
+    docs = snap.docs;
+    if (!focused) render();
+  }, err => {
+    clearTimeout(timer);
+    list.innerHTML = `<div class="empty">Couldn't load the quiz: ${esc(err && err.message || "unknown error")}</div>`;
+  });
+})();
+</script>

@@ -29,6 +29,11 @@ Report cards: save the photo in `school-reports/` and add an entry to `reports` 
 ## Viewing page (private claude.ai artifact)
 https://claude.ai/artifact/KoxzgGFd19Zz5aRMHbZFzu: `build` also writes `tracker/publish/` (index.html = dashboard, graph.html). After every update, republish with the Artifact tool: `url` set to this link, `file_path` = `tracker/publish/index.html`, `files` = {"graph.html": "tracker/publish/graph.html"}. Keep it private, because it contains Dio's marks.
 
+## Daily quiz
+- Page (private, `db` capability): https://claude.ai/artifact/BMng2aatzqUFZxLUSFiunE from `tracker/quiz.html`. Collection `quizzes`, doc id = date: `{date, items:[{topicId, subject, topicName, question, parentHow, answer, passIf}], results:{"0":"pass|partial|fail"}, note}`. The parent taps the results on the page.
+- Scheduled task `dio-daily-quiz` (07:00 daily): records the previous days' results (`quiz-record`), rebuilds and republishes the dashboard, then picks topics (`quiz-pick`) and writes 3 new items to the db (`quiz-asked`).
+- How topics are chosen: inferred "likely passed" topics first, then secure > practising > introduced; spread across subjects; a topic isn't asked again within 14 days. Results: pass → secure (practising needs 2 passes on different days), partial → practising, fail → review/introduced.
+
 ## Public page (GitHub Pages, `docs/`)
 `python3 -I tracker/dio.py docs` builds `docs/index.html`, a graph of the topics SSIS P1 teaches with **no personal data**: it reads only `ssis-map.json`, never `progress.json`, and no "likely passed" inference. The page is encrypted (PBKDF2 + AES-GCM, `tracker/encrypt.mjs`) and opens only with a passcode. The passcode lives in `tracker/.docs-passcode` (gitignored) or env `DOCS_PASSCODE`. **Never write it into any committed file.** A 4-digit code is only a deterrent, not real security, so never put personal data in `docs/`. Rebuild and commit `docs/` whenever `ssis-map.json` changes.
 

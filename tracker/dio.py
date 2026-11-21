@@ -301,6 +301,93 @@ def build_graph(topics, prereqs, prog, generated, dest=None, infer=True):
     print(f"wrote {dest}({len(nodes)} topics, {len(edges)} edges, {len(prog['topics'])} logged + {n_inf} likely passed)")
 
 
+# ---------------- daily quiz ----------------
+# Purpose: spot-check the foundations Dio *should* already have, so a parent can confirm them.
+# Order of priority: topics only inferred ("likely passed") > secure > practising > introduced.
+# A topic isn't asked again within QUIZ_GAP_DAYS, and each day spreads across subjects.
+QUIZ_GAP_DAYS = 14
+PRIORITY = {"inf_prereq": 0, "inf_age": 0, "secure": 1, "practising": 2, "introduced": 3, "review": 0}
+
+
+def quiz_candidates(topics, prereqs, prog):
+    inferred = likely_passed(topics, prereqs, prog)
+    cands = {}
+    for tid, v in prog["topics"].items():
+        if tid in topics and v["status"] in PRIORITY:
+            cands[tid] = v["status"]
+    for tid, st in inferred.items():
+        cands.setdefault(tid, st)
+    return cands
+
+
+def cmd_quiz_pick(a):
+    import random
+    topics, prereqs, smap, prog = load()
+    date = a.date or datetime.date.today().isoformat()
+    d0 = datetime.date.fromisoformat(date)
+    asked = [{"date": d, "topic": t} for d, ts in prog.get("quizAsked", {}).items() for t in ts if d != date]
+    recent = {q["topic"] for q in prog.get("quizLog", []) + asked
+              if 0 <= (d0 - datetime.date.fromisoformat(q["date"])).days < QUIZ_GAP_DAYS}
+    cands = [(tid, st) for tid, st in quiz_candidates(topics, prereqs, prog).items() if tid not in recent]
+    rnd = random.Random(date)
+    rnd.shuffle(cands)
+    cands.sort(key=lambda x: PRIORITY[x[1]])
+    picked, subjects = [], set()
+    for tid, st in cands:                       # first pass: one per subject
+        if topics[tid]["subject"] not in subjects:
+            picked.append((tid, st)); subjects.add(topics[tid]["subject"])
+        if len(picked) == a.n:
+            break
+    for tid, st in cands:                       # fill up if there are fewer subjects than n
+        if len(picked) == a.n:
+            break
+        if (tid, st) not in picked:
+            picked.append((tid, st))
+    ubt = units_by_topic(smap)
+    out = [{"topicId": tid, "status": st, "subject": topics[tid]["subject"], "domain": topics[tid]["domain"],
+            "name": topics[tid]["name"], "description": topics[tid]["description"], "evidence": topics[tid]["evidence"],
+            "assessmentPrompt": topics[tid].get("assessmentPrompt", ""), "age": [topics[tid]["ageRangeStart"], topics[tid]["ageRangeEnd"]],
+            "ssisUnits": [u["title"] for u in ubt.get(tid, [])]} for tid, st in picked]
+    print(json.dumps({"date": date, "topics": out}, ensure_ascii=False, indent=1))
+
+
+def cmd_quiz_asked(a):
+    """Remember which topics went into the quiz on <date> (so they aren't picked again for 14 days)."""
+    topics, _, _, prog = load()
+    for t in a.topics:
+        if t not in topics:
+            sys.exit(f"unknown topic {t}")
+    prog.setdefault("quizAsked", {})[a.date] = a.topics
+    save(prog)
+    print(f"quiz {a.date}: {len(a.topics)} topics")
+
+
+def cmd_quiz_record(a):
+    """pass    → inferred/introduced/review becomes secure; practising becomes secure on its 2nd pass (on different days)
+       partial → practising
+       fail    → review (if it was thought secure/inferred), otherwise introduced"""
+    topics, prereqs, smap, prog = load()
+    if a.topic not in topics or a.result not in ("pass", "partial", "fail"):
+        sys.exit("usage: quiz-record <date> <topicId> pass|partial|fail")
+    cur = status_of(prog, a.topic)
+    log = prog.setdefault("quizLog", [])
+    if any(q["date"] == a.date and q["topic"] == a.topic for q in log):
+        print("already recorded"); return
+    log.append({"date": a.date, "topic": a.topic, "result": a.result, "note": a.note or ""})
+    if a.result == "pass":
+        passes = {q["date"] for q in log if q["topic"] == a.topic and q["result"] == "pass"}
+        new = "secure" if (cur != "practising" or len(passes) >= 2) else "practising"
+    elif a.result == "partial":
+        new = "practising"
+    else:
+        new = "review" if cur in ("secure", "not_started") else "introduced"
+    prog["topics"][a.topic] = {"status": new, "updated": a.date}
+    prog["log"].append({"date": a.date, "topic": a.topic, "status": new, "source": "daily quiz",
+                        "note": f"quiz: {a.result}" + (f" · {a.note}" if a.note else "")})
+    save(prog)
+    print(f"{a.topic}: {cur} → {new}")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sp = ap.add_subparsers(dest="cmd", required=True)
@@ -312,6 +399,10 @@ def main():
     p = sp.add_parser("next"); p.set_defaults(f=cmd_next)
     p = sp.add_parser("build"); p.set_defaults(f=cmd_build)
     p = sp.add_parser("docs"); p.set_defaults(f=cmd_docs)
+    p = sp.add_parser("quiz-pick"); p.add_argument("--n", type=int, default=3); p.add_argument("--date"); p.set_defaults(f=cmd_quiz_pick)
+    p = sp.add_parser("quiz-asked"); p.add_argument("date"); p.add_argument("topics", nargs="+"); p.set_defaults(f=cmd_quiz_asked)
+    p = sp.add_parser("quiz-record"); p.add_argument("date"); p.add_argument("topic"); p.add_argument("result")
+    p.add_argument("--note"); p.set_defaults(f=cmd_quiz_record)
     a = ap.parse_args()
     a.f(a)
 
