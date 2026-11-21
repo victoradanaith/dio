@@ -29,6 +29,9 @@ Report cards: save the photo in `school-reports/` and add an entry to `reports` 
 ## Viewing page (private claude.ai artifact)
 https://claude.ai/artifact/KoxzgGFd19Zz5aRMHbZFzu: `build` also writes `tracker/publish/` (index.html = dashboard, graph.html). After every update, republish with the Artifact tool: `url` set to this link, `file_path` = `tracker/publish/index.html`, `files` = {"graph.html": "tracker/publish/graph.html"}. Keep it private, because it contains Dio's marks.
 
+## Public page (GitHub Pages, `docs/`)
+`python3 -I tracker/dio.py docs` builds `docs/index.html`, a graph of the topics SSIS P1 teaches with **no personal data**: it reads only `ssis-map.json`, never `progress.json`, and no "likely passed" inference. The page is encrypted (PBKDF2 + AES-GCM, `tracker/encrypt.mjs`) and opens only with a passcode. The passcode lives in `tracker/.docs-passcode` (gitignored) or env `DOCS_PASSCODE`. **Never write it into any committed file.** A 4-digit code is only a deterrent, not real security, so never put personal data in `docs/`. Rebuild and commit `docs/` whenever `ssis-map.json` changes.
+
 ## Sources
 - `school-reports/`: report card photos (marks are recorded in `progress.json` → `reports`)
 

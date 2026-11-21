@@ -11,3 +11,4 @@ Dio_CA1_Revision_Guide.md
 .DS_Store
 __pycache__/
 tracker/publish/
+tracker/.docs-passcode

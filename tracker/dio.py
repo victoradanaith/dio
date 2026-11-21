@@ -205,6 +205,44 @@ def cmd_build(a):
     export_artifact()
 
 
+def cmd_docs(a):
+    """docs/ for GitHub Pages (public): the graph with NO personal data.
+    It reads ssis-map.json only (what the school teaches), never progress.json."""
+    topics, prereqs, smap, _ = load()
+    mapped = {t for u in smap["units"] for t in u["topics"]}
+    fake = {"topics": {t: {"status": "introduced"} for t in mapped}, "log": []}
+    import os, subprocess
+    passcode = os.environ.get("DOCS_PASSCODE") or (
+        (ROOT / ".docs-passcode").read_text().strip() if (ROOT / ".docs-passcode").exists() else "")
+    if not passcode:
+        sys.exit("docs: set DOCS_PASSCODE or write the passcode to tracker/.docs-passcode (gitignored)")
+    out = ROOT.parent / "docs"
+    out.mkdir(exist_ok=True)
+    plain = ROOT / "publish" / "docs-plain.html"   # gitignored; only the encrypted copy goes to docs/
+    plain.parent.mkdir(exist_ok=True)
+    build_graph(topics, prereqs, fake, datetime.date.today().isoformat(), plain, infer=False)
+    html_ = plain.read_text()
+    swaps = [
+        ("<title>Dio Topic Graph</title>", "<title>SSIS P1 Topic Map</title>"),
+        ("Dio: แผนที่หัวข้อการเรียน", "SSIS P1: แผนที่หัวข้อการเรียน"),
+        (' <a href="dashboard.html">← กลับไป dashboard</a>', ' Built on the <a href="https://github.com/withmarbleapp/os-taxonomy">Marble taxonomy</a> (CC BY-SA 4.0).'),
+        ('สีตามสถานะ Dio', 'สีตาม SSIS P1'),
+        ('แสดงเฉพาะหัวข้อที่ Dio ผ่าน/กำลังเรียน', 'แสดงเฉพาะหัวข้อที่ SSIS P1 สอน (T1)'),
+        ('introduced: {th:"เพิ่งเรียน"', 'introduced: {th:"สอนใน SSIS P1 (T1)"'),
+        ('Dio ผ่าน/กำลังเรียนแล้ว', 'สอนใน SSIS P1 แล้ว'),
+        ('Dots with a ring are topics Dio has passed or is learning now', 'Dots with a ring are topics SSIS P1 teaches'),
+    ]
+    for old, new in swaps:
+        if old not in html_:
+            sys.exit(f"docs: template text not found: {old!r}")
+        html_ = html_.replace(old, new)
+    plain.write_text(html_)
+    subprocess.run(["node", str(ROOT / "encrypt.mjs"), str(plain), str(ROOT / "gate.template.html"), str(out / "index.html")],
+                   check=True, env={**os.environ, "DOCS_PASSCODE": passcode})
+    (out / ".nojekyll").write_text("")
+    print(f"wrote {out / 'index.html'}  ({len(mapped)} SSIS-mapped topics, no progress data)")
+
+
 def export_artifact():
     """tracker/publish/: the same pages, shaped for the private claude.ai artifact.
     index.html = dashboard as page content (the artifact host adds doctype/head/body), graph.html = its own full page."""
@@ -242,8 +280,8 @@ def likely_passed(topics, prereqs, prog):
     return out
 
 
-def build_graph(topics, prereqs, prog, generated):
-    inferred = likely_passed(topics, prereqs, prog)
+def build_graph(topics, prereqs, prog, generated, dest=None, infer=True):
+    inferred = likely_passed(topics, prereqs, prog) if infer else {}
     ids = list(topics)
     idx = {t: i for i, t in enumerate(ids)}
     nodes = []
@@ -257,9 +295,10 @@ def build_graph(topics, prereqs, prog, generated):
     data = {"generated": generated, "nodes": nodes, "edges": edges}
     tpl = (ROOT / "graph.template.html").read_text()
     out = tpl.replace("/*__DATA__*/null", json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"))
-    (ROOT / "graph.html").write_text(out)
+    dest = dest or ROOT / "graph.html"
+    dest.write_text(out)
     n_inf = sum(1 for v in inferred.values())
-    print(f"wrote {ROOT / 'graph.html'}  ({len(nodes)} topics, {len(edges)} edges, {len(prog['topics'])} logged + {n_inf} likely passed)")
+    print(f"wrote {dest}({len(nodes)} topics, {len(edges)} edges, {len(prog['topics'])} logged + {n_inf} likely passed)")
 
 
 def main():
@@ -272,6 +311,7 @@ def main():
     p.add_argument("--note"); p.add_argument("--source"); p.add_argument("--date"); p.set_defaults(f=cmd_log)
     p = sp.add_parser("next"); p.set_defaults(f=cmd_next)
     p = sp.add_parser("build"); p.set_defaults(f=cmd_build)
+    p = sp.add_parser("docs"); p.set_defaults(f=cmd_docs)
     a = ap.parse_args()
     a.f(a)
 
