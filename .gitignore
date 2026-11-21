@@ -12,3 +12,5 @@ Dio_CA1_Revision_Guide.md
 __pycache__/
 tracker/publish/
 tracker/.docs-passcode
+tracker/history/
+CLAUDE.local.md

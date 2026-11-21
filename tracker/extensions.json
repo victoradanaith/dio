@@ -49,7 +49,38 @@
       "evidence": ["เขียนตามคำบอกได้ถูก ≥ 8/10 คำ", "สะกดสระและพยัญชนะถูกตำแหน่ง", "ลายมืออ่านออก อยู่ในบรรทัด"],
       "ageRangeStart": 6, "ageRangeEnd": 7
     },
-
+    {
+      "id": "x_th_vowels_basic",
+      "type": "LANGUAGE", "subject": "Thai", "domain": "Phonics & Writing",
+      "name": "สระพื้นฐาน อะ อา อิ อี อึ อือ (ประสมคำ)",
+      "description": "Read and spell syllables with the basic short and long vowels อะ อา อิ อี อึ อือ อุ อู",
+      "evidence": ["อ่านคำที่ประสมสระ อะ/อา อิ/อี อึ/อือ ได้", "บอกได้ว่าสระไหนเสียงสั้น/ยาว", "เขียนสะกดคำง่ายๆ ที่ใช้สระเหล่านี้ได้"],
+      "ageRangeStart": 5, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_th_akson_klang",
+      "type": "LANGUAGE", "subject": "Thai", "domain": "Phonics & Writing",
+      "name": "อักษรกลาง (ก จ ด ต บ ป อ)",
+      "description": "Know the 9 middle-class consonants (ก จ ฎ ฏ ด ต บ ป อ) and read them with basic vowels (ดรุณศึกษา บทที่ 1)",
+      "evidence": ["บอกอักษรกลางได้ครบ (ก จ ฎ ฏ ด ต บ ป อ)", "อ่านคำอักษรกลาง + สระง่ายๆ ได้", "แยกอักษรกลางออกจากอักษรสูง/ต่ำได้ในคำง่ายๆ"],
+      "ageRangeStart": 6, "ageRangeEnd": 8
+    },
+    {
+      "id": "x_ma_ordinal",
+      "type": "LANGUAGE", "subject": "Mathematics", "domain": "Number Representation & Place Value",
+      "name": "Ordinal numbers: first to tenth",
+      "description": "Name and use ordinal numbers first–tenth (1st–10th) to describe the position of objects or people in a sequence",
+      "evidence": ["Say and read first to tenth in order", "Name the position of an object in a line (e.g. 'the cat is third')", "Point to the object in a given position (e.g. 'which one is seventh?')"],
+      "ageRangeStart": 6, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_sci_float_sink",
+      "type": "CONCEPTUAL", "subject": "Science", "domain": "Forces & Motion",
+      "name": "Floating and sinking",
+      "description": "Predict and test which everyday objects float or sink in water, and sort them by the result",
+      "evidence": ["Predict whether an object will float or sink before testing", "Test and record the result (float / sink)", "Sort objects into floats and sinks, and say whether the prediction was right"],
+      "ageRangeStart": 5, "ageRangeEnd": 7
+    },
     {
       "id": "x_zh_finals",
       "type": "LANGUAGE", "subject": "Mandarin", "domain": "Pinyin",
@@ -107,6 +138,14 @@
       "ageRangeStart": 6, "ageRangeEnd": 8
     },
     {
+      "id": "x_zh_hanzi_basic",
+      "type": "LANGUAGE", "subject": "Mandarin", "domain": "Characters",
+      "name": "อักษรจีนพื้นฐาน (一–十, 你 好 我, 大 小, สัตว์)",
+      "description": "Recognise, read, and write basic characters: numbers 一–十, 你 好 我, 大 小, simple animals (马 牛 猪), and his own name",
+      "evidence": ["อ่านและเขียน 一 ถึง 十 ได้", "อ่าน 你好 / 我 / 大 / 小 ได้", "เขียนตามลำดับขีดง่ายๆ ได้"],
+      "ageRangeStart": 5, "ageRangeEnd": 8
+    },
+    {
       "id": "x_zh_two_syllable",
       "type": "LANGUAGE", "subject": "Mandarin", "domain": "Pinyin",
       "name": "拼读两音节词",
@@ -117,6 +156,14 @@
   ],
   "prerequisites": [
     {"topicId": "x_th_vowel_e", "prerequisiteId": "x_th_consonants", "strength": "hard", "reason": "You can only put เ- in front of a consonant you already know"},
+    {"topicId": "x_th_vowels_basic", "prerequisiteId": "x_th_consonants", "strength": "hard", "reason": "Spelling a syllable needs its consonant"},
+    {"topicId": "x_th_vowel_e", "prerequisiteId": "x_th_vowels_basic", "strength": "soft", "reason": "Vowels that sit in front of the consonant come after the basic vowels"},
+    {"topicId": "x_th_akson_klang", "prerequisiteId": "x_th_consonants", "strength": "hard", "reason": "You need to know the consonants before learning their classes"},
+    {"topicId": "x_th_reading_pasapatee", "prerequisiteId": "x_th_vowels_basic", "strength": "hard", "reason": "The first lessons use basic vowels"},
+    {"topicId": "x_ma_ordinal", "prerequisiteId": "mt_9IzhGUZ30z", "strength": "soft", "reason": "Ordinal words build on the number words"},
+    {"topicId": "x_ma_ordinal", "prerequisiteId": "mt_WcfaSfVT33", "strength": "hard", "reason": "You need to count in order to name positions"},
+    {"topicId": "x_sci_float_sink", "prerequisiteId": "mt_Wa44s-f8Ws", "strength": "soft", "reason": "Floating and sinking is taught as a predict-and-test experiment"},
+    {"topicId": "x_zh_hanzi_basic", "prerequisiteId": "x_zh_tones", "strength": "soft", "reason": "Reading characters aloud needs tones"},
     {"topicId": "x_th_dictation", "prerequisiteId": "x_th_vowel_e", "strength": "soft", "reason": "Dictation words in Term 1 use สระ เ-"},
     {"topicId": "x_th_dictation", "prerequisiteId": "x_th_consonants", "strength": "hard", "reason": "You need the consonants before you can write words"},
     {"topicId": "x_th_reading_pasapatee", "prerequisiteId": "x_th_consonants", "strength": "hard", "reason": "Reading needs consonant recognition"},

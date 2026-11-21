@@ -29,6 +29,10 @@ Report cards: save the photo in `school-reports/` and add an entry to `reports` 
 ## Viewing page (private claude.ai artifact)
 https://claude.ai/artifact/KoxzgGFd19Zz5aRMHbZFzu: `build` also writes `tracker/publish/` (index.html = dashboard, graph.html). After every update, republish with the Artifact tool: `url` set to this link, `file_path` = `tracker/publish/index.html`, `files` = {"graph.html": "tracker/publish/graph.html"}. Keep it private, because it contains Dio's marks.
 
+## Learning history (before SSIS)
+- Homeschool log Apr 2025 – Mar 2026: Google Sheet "Dio - HS Daily Log 2025-2026" (id in `CLAUDE.local.md`), one tab per month, plus MONTHLY OVERVIEW and WEEKLY PLAN.
+- Mapped to topics in `tracker/history/homeschool-2025-26.json` (gitignored), imported with `dio.py import-evidence <file>`: every entry goes into the log, statuses only go **up** (never down), and nothing becomes `secure` from history alone. A backup from before the import is at `tracker/history/progress.backup-2026-11-21.json`.
+
 ## Daily quiz
 - Page (private, `db` capability): https://claude.ai/artifact/BMng2aatzqUFZxLUSFiunE from `tracker/quiz.html`. Collection `quizzes`, doc id = date: `{date, items:[{topicId, subject, topicName, question, parentHow, answer, passIf}], results:{"0":"pass|partial|fail"}, note}`. The parent taps the results on the page.
 - Scheduled task `dio-daily-quiz` (07:00 daily): records the previous days' results (`quiz-record`), rebuilds and republishes the dashboard, then picks topics (`quiz-pick`) and writes 3 new items to the db (`quiz-asked`).
@@ -39,6 +43,7 @@ https://claude.ai/artifact/KoxzgGFd19Zz5aRMHbZFzu: `build` also writes `tracker/
 `python3 -I tracker/dio.py docs` builds `docs/index.html`, a graph of the topics SSIS P1 teaches with **no personal data**: it reads only `ssis-map.json`, never `progress.json`, and no "likely passed" inference. The page is encrypted (PBKDF2 + AES-GCM, `tracker/encrypt.mjs`) and opens only with a passcode. The passcode lives in `tracker/.docs-passcode` (gitignored) or env `DOCS_PASSCODE`. **Never write it into any committed file.** A 4-digit code is only a deterrent, not real security, so never put personal data in `docs/`. Rebuild and commit `docs/` whenever `ssis-map.json` changes.
 
 ## Sources
+- **Google Drive folder "P1"** (id in `CLAUDE.local.md`): official SSIS documents as photos. `Term 1/` (exam pointers), `Term 2/` (schemes of work), `Weekly/<month>/` (weekly plans). Read them with the Google Drive connector (`download_file_content` shows the image). Whenever a new file appears, add units to `ssis-map.json` → `seed` → `build`. Read as of 2026-11-21: T1 Maths exam pointers (Ch1–3), weekly plan wk 12 p.4, T2 Art scheme p.3, T2 Science scheme p.2.
 - `school-reports/`: report card photos (marks are recorded in `progress.json` → `reports`)
 
 ## Git / GitHub

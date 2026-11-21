@@ -27,10 +27,22 @@
       "topics": ["mt_AhfyJoTQtY", "mt_Jq0MjURrRC", "mt_18qkgxr_-T"]
     },
     {
+      "id": "ca1-ma-ch1", "term": "T1", "assessment": "CA1 (official exam pointers)", "subject": "Mathematics", "teacher": "Maths teacher",
+      "title": "Chapter 1: Numbers to 10 (counting, spelling numbers 1–10, comparing numbers, greater/smaller than, number patterns)",
+      "source": "Term 1 Exam Pointers: Textbook 1A pp. 2–17, Practice Book 1A pp. 1–20",
+      "topics": ["mt_WcfaSfVT33", "mt_9IzhGUZ30z", "mt__YRJ23GuIK", "mt__h7hvT4tEb", "mt_W3VOAuFwVw"]
+    },
+    {
       "id": "ca1-ma-ch2", "term": "T1", "assessment": "CA1 + Chapter 2 test (17 Sep)", "subject": "Mathematics", "teacher": "Maths teacher",
-      "title": "Chapter 2: number bonds, addition and subtraction within 10",
-      "source": "Textbook Ch. 2, Practice Book pp. 47–48",
-      "topics": ["mt_s2mfRBoTal", "mt_7XcCG43ZZW", "mt_zuKAX6lcYR", "mt__we2TDqnJx", "mt_8RmpkDxT9L", "mt_oIzycTBeE4", "mt_VAWV_l7J0D"]
+      "title": "Chapter 2: Addition (more and less, number bonds, addition stories)",
+      "source": "Term 1 Exam Pointers: Textbook 1A pp. 18–31, Practice Book 1A pp. 21–34",
+      "topics": ["mt_OvyoRo47K-", "mt_s2mfRBoTal", "mt_7XcCG43ZZW", "mt__we2TDqnJx", "mt_8RmpkDxT9L", "mt_oIzycTBeE4", "mt_VAWV_l7J0D"]
+    },
+    {
+      "id": "ca1-ma-ch3", "term": "T1", "assessment": "CA1 (official exam pointers)", "subject": "Mathematics", "teacher": "Maths teacher",
+      "title": "Chapter 3: Subtraction (more and less, number bonds, subtraction stories)",
+      "source": "Term 1 Exam Pointers: Textbook 1A pp. 32–45, Practice Book 1A pp. 35–54",
+      "topics": ["mt_zuKAX6lcYR", "mt_s2mfRBoTal", "mt__we2TDqnJx", "mt_VAWV_l7J0D"]
     },
     {
       "id": "ca1-ma-vocab", "term": "T1", "assessment": "Maths vocabulary spelling test (25 Sep)", "subject": "Mathematics", "teacher": "Maths teacher",
@@ -55,6 +67,54 @@
       "title": "Science T1: topics not known yet (check the exam pointers)",
       "source": "-",
       "topics": []
+    },
+    {
+      "id": "t2-w12-en-grammar", "term": "T2", "assessment": "Weekly plan, week 12 (Nov 2026)", "subject": "English", "teacher": "English teacher",
+      "title": "Grammar: sentences (unscrambling words, punctuation), pronouns (whose it is, said in a full sentence), spelling test corrections",
+      "source": "Weekly plan wk 12 p.4: TB p.49, WB pp.48–49, Duck English",
+      "topics": ["mt_N8CpN1EJrP", "mt_QEr24lqzvH", "mt_sZXPK1FnRB", "mt_AhfyJoTQtY"]
+    },
+    {
+      "id": "t2-w12-en-polite", "term": "T2", "assessment": "Weekly plan, week 12 (Nov 2026)", "subject": "English", "teacher": "English teacher",
+      "title": "What do they say? Polite words to ask for things; matching answers to questions",
+      "source": "Weekly plan wk 12 p.4: TB pp.42–43, WB pp.42–43",
+      "topics": ["mt_dALEWRHXnZ", "mt_6lHBTwQPrS"]
+    },
+    {
+      "id": "t2-w12-ma-ordinal", "term": "T2", "assessment": "Weekly plan, week 12 (Nov 2026)", "subject": "Mathematics", "teacher": "Maths teacher",
+      "title": "Ordinal numbers: naming positions first to tenth",
+      "source": "Weekly plan wk 12 p.4: TB pp.66–69, PB pp.75–80",
+      "topics": ["x_ma_ordinal"]
+    },
+    {
+      "id": "t2-w12-sci-plants", "term": "T2", "assessment": "Weekly plan, week 12 (Nov 2026)", "subject": "Science", "teacher": "Science teacher",
+      "title": "What plants need; what a plant is and the parts of a plant",
+      "source": "Weekly plan wk 12 p.4",
+      "topics": ["mt_xT6jPzyj92", "mt_3v0VNkwquK"]
+    },
+    {
+      "id": "t2-w12-th", "term": "T2", "assessment": "Weekly plan, week 12 (Nov 2026)", "subject": "Thai", "teacher": "Thai-Thai class",
+      "title": "สอบเขียนไทย คำศัพท์บทที่ 4 (ภาษาพาที)",
+      "source": "Weekly plan wk 12 p.4",
+      "topics": ["x_th_dictation", "x_th_reading_pasapatee"]
+    },
+    {
+      "id": "t2-w12-ict", "term": "T2", "assessment": "Weekly plan, week 12 (Nov 2026)", "subject": "Computing", "teacher": "ICT teacher",
+      "title": "ICT: digital cameras (how a digital camera works)",
+      "source": "Weekly plan wk 12 p.4",
+      "topics": ["mt_SZrMv3YAky"]
+    },
+    {
+      "id": "t2-sci-movement", "term": "T2", "assessment": "SA1 (18–22 Jan 2027)", "subject": "Science", "teacher": "Science teacher",
+      "title": "Unit 3, Movement of objects (weeks 9–12): moving balls, push or pull, float or sink",
+      "source": "T2 Scheme of Work p.2: Cambridge Primary Science 1 SB pp.78–88, AB pp.43–54",
+      "topics": ["mt_B3W5EfimJw", "mt_GBY8enpzO0", "x_sci_float_sink"]
+    },
+    {
+      "id": "t2-art-shapes-patterns", "term": "T2", "assessment": "Art (weeks 5–6)", "subject": "Mathematics", "teacher": "Art teacher",
+      "title": "Art: Shape Monster (circles, squares, triangles, rectangles); weaving with AB patterns",
+      "source": "T2 Art Scheme of Work p.3",
+      "topics": ["mt_KJeEeTutJI", "mt_ZjIFGc6zPW"]
     }
   ]
 }

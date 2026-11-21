@@ -341,6 +341,32 @@ def build_graph(topics, prereqs, prog, generated, dest=None, infer=True):
     print(f"wrote {dest}({len(nodes)} topics, {len(edges)} edges, {len(prog['topics'])} logged + {n_inf} likely passed)")
 
 
+RANK = {"not_started": 0, "introduced": 1, "review": 1, "practising": 2, "secure": 3}
+
+
+def cmd_import_evidence(a):
+    """Import a file of past evidence {source, entries:[{date, topic, status, note}]}.
+    Every entry is logged; a topic's status only goes UP (never downgraded, never set to secure from history alone)."""
+    topics, _, _, prog = load()
+    src = json.load(open(a.file))
+    seen = {(e["date"], e["topic"], e.get("note", "")) for e in prog["log"]}
+    n_log = n_up = 0
+    for e in sorted(src["entries"], key=lambda e: e["date"]):
+        if e["topic"] not in topics:
+            sys.exit(f"unknown topic {e['topic']}")
+        if (e["date"], e["topic"], e["note"]) in seen:
+            continue
+        st = "practising" if e["status"] == "secure" else e["status"]
+        cur = status_of(prog, e["topic"])
+        prog["log"].append({"date": e["date"], "topic": e["topic"], "status": st, "source": src["source"], "note": e["note"]})
+        n_log += 1
+        if RANK[st] > RANK[cur]:
+            prog["topics"][e["topic"]] = {"status": st, "updated": e["date"]}
+            n_up += 1
+    save(prog)
+    print(f"logged {n_log} evidence entries, raised {n_up} statuses (none lowered)")
+
+
 # ---------------- daily quiz ----------------
 # Purpose: spot-check the foundations Dio *should* already have, so a parent can confirm them.
 # Order of priority: topics only inferred ("likely passed") > secure > practising > introduced.
@@ -441,6 +467,7 @@ def main():
     p = sp.add_parser("docs"); p.set_defaults(f=cmd_docs)
     p = sp.add_parser("quiz-docs"); p.add_argument("src", nargs="?", default=str(ROOT / "publish" / "quizdb")); p.set_defaults(f=cmd_quiz_docs)
     p = sp.add_parser("quiz-pick"); p.add_argument("--n", type=int, default=3); p.add_argument("--date"); p.set_defaults(f=cmd_quiz_pick)
+    p = sp.add_parser("import-evidence"); p.add_argument("file"); p.set_defaults(f=cmd_import_evidence)
     p = sp.add_parser("quiz-asked"); p.add_argument("date"); p.add_argument("topics", nargs="+"); p.set_defaults(f=cmd_quiz_asked)
     p = sp.add_parser("quiz-record"); p.add_argument("date"); p.add_argument("topic"); p.add_argument("result")
     p.add_argument("--note"); p.set_defaults(f=cmd_quiz_record)
