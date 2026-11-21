@@ -10,3 +10,4 @@ Dio_CA1_Revision_Guide.md
 .claude/
 .DS_Store
 __pycache__/
+tracker/publish/

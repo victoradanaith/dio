@@ -202,6 +202,22 @@ def cmd_build(a):
     (ROOT / "dashboard.html").write_text(out)
     print(f"wrote {ROOT / 'dashboard.html'}  ({len(tracked)} tracked, {len(check)} to check, {len(ready)} ready)")
     build_graph(topics, prereqs, prog, data["generated"])
+    export_artifact()
+
+
+def export_artifact():
+    """tracker/publish/: the same pages, shaped for the private claude.ai artifact.
+    index.html = dashboard as page content (the artifact host adds doctype/head/body), graph.html = its own full page."""
+    import re
+    pub = ROOT / "publish"
+    pub.mkdir(exist_ok=True)
+    dash = (ROOT / "dashboard.html").read_text()
+    dash = re.sub(r"<!doctype html>\s*|</?html[^>]*>\s*|<head>\s*|</head>\s*|</?body>\s*", "", dash, flags=re.I)
+    dash = re.sub(r'<meta (charset|name="viewport")[^>]*>\s*', "", dash)
+    (pub / "index.html").write_text(dash)
+    graph = (ROOT / "graph.html").read_text().replace(
+        '<a href="dashboard.html">', '<a href="./" onclick="if(history.length>1){history.back();return false}">')
+    (pub / "graph.html").write_text(graph)
 
 
 def likely_passed(topics, prereqs, prog):

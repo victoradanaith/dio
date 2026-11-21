@@ -26,6 +26,9 @@ SSIS uses the Singapore curriculum, but Marble aligns to UK/US/AU/Ontario/NCERT.
 
 Report cards: save the photo in `school-reports/` and add an entry to `reports` in `progress.json` (subject marks, competencies, comment). The report card gives only one mark per subject. If the mark is high, the mapped topics go to `practising` (not `secure`), and the foundations they rely on can be inferred as `secure`; note in the log that it was inferred.
 
+## Viewing page (private claude.ai artifact)
+https://claude.ai/artifact/KoxzgGFd19Zz5aRMHbZFzu: `build` also writes `tracker/publish/` (index.html = dashboard, graph.html). After every update, republish with the Artifact tool: `url` set to this link, `file_path` = `tracker/publish/index.html`, `files` = {"graph.html": "tracker/publish/graph.html"}. Keep it private, because it contains Dio's marks.
+
 ## Sources
 - `school-reports/`: report card photos (marks are recorded in `progress.json` → `reports`)
 
