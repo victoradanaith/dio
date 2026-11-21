@@ -1,0 +1,60 @@
+{
+  "note": "SSIS P1 school units mapped onto taxonomy topics. One unit can map to several topics. Add a new unit whenever the teachers post new content.",
+  "student": {"name": "Dio", "school": "SSIS", "level": "P1", "year": "AY 2026–2027", "classes": ["Thai-Thai", "Mandarin Pinyin"]},
+  "units": [
+    {
+      "id": "ca1-en-grammar-mcq", "term": "T1", "assessment": "CA1 (5–6 Oct 2026)", "subject": "English", "teacher": "English teacher",
+      "title": "Section A: grammar MCQ (colours, shapes, family, classroom objects, 'as ___ as a ___')",
+      "source": "Mock exam (exam-materials/), Homework Book pp. 5–12",
+      "topics": ["mt_oL9s_bufDp", "mt_RioBUxHz1X", "mt_cU3LcEVkBQ", "mt_A8pSrj0E-D"]
+    },
+    {
+      "id": "ca1-en-nouns-verbs", "term": "T1", "assessment": "CA1 (5–6 Oct 2026)", "subject": "English", "teacher": "English teacher",
+      "title": "Sections B–C: tick the nouns, circle the action verbs",
+      "source": "Mock exam, Textbook pp. 6–7",
+      "topics": ["mt_yBJyCfhtem", "mt_qzwQAOfurw", "mt_uM6q_KBWKy"]
+    },
+    {
+      "id": "ca1-en-comprehension", "term": "T1", "assessment": "CA1 (5–6 Oct 2026)", "subject": "English", "teacher": "English teacher",
+      "title": "Sections D–E: reading comprehension (MCQ + full-sentence answers)",
+      "source": "Mock exam",
+      "topics": ["mt_QCWWmDMYZR", "mt_sSQlLOnAow", "mt_E5KC4AnRLW", "mt_QEr24lqzvH", "mt_N8CpN1EJrP"]
+    },
+    {
+      "id": "ca1-en-spelling", "term": "T1", "assessment": "CA1 (5–6 Oct 2026)", "subject": "English", "teacher": "English teacher",
+      "title": "Spelling: body parts and clothes (run, play, eye, nose … feet, shirt, sock)",
+      "source": "Spelling list",
+      "topics": ["mt_AhfyJoTQtY", "mt_Jq0MjURrRC", "mt_18qkgxr_-T"]
+    },
+    {
+      "id": "ca1-ma-ch2", "term": "T1", "assessment": "CA1 + Chapter 2 test (17 Sep)", "subject": "Mathematics", "teacher": "Maths teacher",
+      "title": "Chapter 2: number bonds, addition and subtraction within 10",
+      "source": "Textbook Ch. 2, Practice Book pp. 47–48",
+      "topics": ["mt_s2mfRBoTal", "mt_7XcCG43ZZW", "mt_zuKAX6lcYR", "mt__we2TDqnJx", "mt_8RmpkDxT9L", "mt_oIzycTBeE4", "mt_VAWV_l7J0D"]
+    },
+    {
+      "id": "ca1-ma-vocab", "term": "T1", "assessment": "Maths vocabulary spelling test (25 Sep)", "subject": "Mathematics", "teacher": "Maths teacher",
+      "title": "Maths vocabulary: make, take away, left, subtract, equation",
+      "source": "Vocab list",
+      "topics": ["mt_lMz9nAs7VO", "mt_TMoHjMhRS2"]
+    },
+    {
+      "id": "ca1-th-books", "term": "T1", "assessment": "CA1 (5 Oct 2026)", "subject": "Thai", "teacher": "Thai-Thai class",
+      "title": "Review 3 books: ภาษาพาที บทที่ 1–2, ทักษะภาษา เล่ม ๑ pp. 54–55, purple notebook",
+      "source": "LINE group",
+      "topics": ["x_th_reading_pasapatee", "x_th_vowel_e", "x_th_numerals", "x_th_classifiers", "x_th_dictation"]
+    },
+    {
+      "id": "ca1-zh-pinyin", "term": "T1", "assessment": "CA1 (5–6 Oct 2026)", "subject": "Mandarin", "teacher": "Pinyin teacher",
+      "title": "Pinyin initials j q x (p.31), z c s (p.40), zh ch sh r (p.41)",
+      "source": "Textbook, listening tape p.41",
+      "topics": ["x_zh_jqx", "x_zh_zcs", "x_zh_zhchshr", "x_zh_flat_vs_curled", "x_zh_two_syllable"]
+    },
+    {
+      "id": "ca1-sci", "term": "T1", "assessment": "CA1", "subject": "Science", "teacher": "?",
+      "title": "Science T1: topics not known yet (check the exam pointers)",
+      "source": "-",
+      "topics": []
+    }
+  ]
+}

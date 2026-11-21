@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dio Topic Graph</title>
+<style>
+:root{
+  --bg:#f7f6f2;--panel:rgba(255,255,255,.92);--ink:#1d1d1b;--muted:#6b6a65;--line:#e4e2db;--accent:#2f5d9a;
+  --edge:29,29,27;--dim:#cfcdc6;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f0f10;--panel:rgba(30,30,32,.92);--ink:#ecebe6;--muted:#a09e97;--line:#38373a;--accent:#8db4ea;
+  --edge:236,235,230;--dim:#3a3a3d;}}
+:root[data-theme="dark"]{
+  --bg:#0f0f10;--panel:rgba(30,30,32,.92);--ink:#ecebe6;--muted:#a09e97;--line:#38373a;--accent:#8db4ea;
+  --edge:236,235,230;--dim:#3a3a3d;}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  font:14px/1.45 -apple-system,BlinkMacSystemFont,"Sukhumvit Set","Noto Sans Thai",system-ui,sans-serif}
+canvas{display:block;width:100vw;height:100vh;touch-action:none;cursor:grab}
+canvas.drag{cursor:grabbing}
+.box{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;backdrop-filter:blur(6px)}
+#ctl{top:12px;left:12px;width:300px;max-height:calc(100vh - 24px);overflow:auto}
+#ctl h1{font-size:17px;margin:0}
+.sub{color:var(--muted);font-size:12px}
+a{color:var(--accent)}
+input[type=search]{width:100%;padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;margin-top:10px}
+.seg{display:flex;margin-top:10px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink);padding:5px;font:inherit;font-size:12.5px;cursor:pointer}
+.seg button.on{background:var(--accent);color:#fff}
+.lg{display:flex;flex-direction:column;gap:3px;margin-top:10px;font-size:12.5px}
+.lg label{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.lg label.off{opacity:.35}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none}
+.n{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+.chk{display:flex;gap:6px;align-items:center;margin-top:10px;font-size:12.5px}
+#tip{position:fixed;pointer-events:none;display:none;max-width:280px;font-size:12.5px;padding:7px 10px}
+#panel{top:12px;right:12px;width:340px;max-height:calc(100vh - 24px);overflow:auto;display:none}
+#panel h2{font-size:16px;margin:0 0 2px}
+#panel ul{margin:6px 0;padding-left:16px;font-size:12.5px}
+#panel li{cursor:pointer}
+.pill{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:999px;color:#fff}
+.close{float:right;border:0;background:transparent;color:var(--muted);font-size:18px;cursor:pointer}
+.meter{height:8px;border-radius:4px;background:var(--dim);overflow:hidden;margin:6px 0 2px}
+.meter span{display:block;height:100%;background:#3f9b6b}
+#hint{bottom:12px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--muted);padding:6px 12px}
+@media (max-width:700px){
+  #ctl{width:auto;right:12px;max-height:40vh}
+  #panel{top:auto;bottom:12px;left:12px;right:12px;width:auto;max-height:45vh}
+  #hint{display:none}
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div class="box" id="ctl">
+  <h1 id="ttl" style="cursor:pointer">Dio: แผนที่หัวข้อการเรียน <span class="sub" id="tg">▾</span></h1>
+  <div id="body">
+  <div class="sub">Each dot is one micro-topic. Height = age, lines = prerequisites. <a href="dashboard.html">← กลับไป dashboard</a></div>
+  <input type="search" id="q" placeholder="ค้นหาหัวข้อ… (เช่น fractions, สระ)">
+  <div class="seg"><button id="mSubj">สีตามวิชา</button><button id="mDio" class="on">สีตามสถานะ Dio</button></div>
+  <label class="chk"><input type="checkbox" id="onlyDio"> แสดงเฉพาะหัวข้อที่ Dio ผ่าน/กำลังเรียน</label>
+  <label class="chk"><input type="checkbox" id="spin" checked> หมุนอัตโนมัติ</label>
+  <div class="lg" id="lgStatus"></div>
+  <div class="lg" id="lgSubj"></div>
+  <div class="sub" id="gen" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<div class="box" id="panel"></div>
+<div class="box" id="tip"></div>
+<div class="box" id="hint">ลากเพื่อหมุน · scroll เพื่อซูม · ดับเบิลคลิกเพื่อรีเซ็ต · คลิกจุดเพื่อดูทุกพื้นฐานที่ต้องผ่านก่อน</div>
+
+<script>
+const D = /*__DATA__*/null;
+const STATUS = {
+  secure:     {th:"ทำได้แล้ว",             c:"#3f9b6b"},
+  practising: {th:"กำลังฝึก",              c:"#e7a83b"},
+  introduced: {th:"เพิ่งเรียน",             c:"#5b8fd1"},
+  review:     {th:"ต้องทบทวน",             c:"#d0564b"},
+  inf_prereq: {th:"น่าจะผ่านแล้ว (พื้นฐาน)", c:"#8fd1ad"},
+  inf_age:    {th:"น่าจะผ่านแล้ว (ตามวัย)",  c:"#b9dcc6"},
+};
+const PALETTE = ["#4e79a7","#e15759","#59a14f","#f28e2b","#b07aa1","#76b7b2","#edc948","#ff9da7","#9c755f","#86bcb6","#d37295","#a0cbe8","#8cd17d","#bab0ac"];
+const N = D.nodes.map((a,i) => ({i,id:a[0],name:a[1],subject:a[2],domain:a[3],a0:a[4],a1:a[5],st:a[6],desc:a[7],cen:a[8],pre:[],post:[]}));
+D.edges.forEach(([t,p,h]) => { N[t].pre.push([p,h]); N[p].post.push(t); });
+const PASSED = new Set(["secure","practising","introduced","review","inf_prereq","inf_age"]);
+
+// ---- layout: subject → sector around the axis, domain → sub-sector, age → height
+function hash(s, k){ let h = 2166136261 ^ k; for (const ch of s){ h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return ((h>>>0) % 100000) / 100000; }
+const subjects = {}; N.forEach(n => (subjects[n.subject] ??= {}, (subjects[n.subject][n.domain] ??= []).push(n)));
+const subjNames = Object.keys(subjects).sort((a,b) => Object.values(subjects[b]).flat().length - Object.values(subjects[a]).flat().length);
+const SCOL = {}; subjNames.forEach((s,k) => SCOL[s] = PALETTE[k % PALETTE.length]);
+let ang = 0; const TOT = N.length, GAP = 0.04;
+subjNames.forEach(s => {
+  const doms = Object.keys(subjects[s]).sort(); const cnt = doms.reduce((a,d) => a + subjects[s][d].length, 0);
+  const width = (Math.PI*2 - GAP*subjNames.length) * cnt / TOT;
+  let a = ang;
+  doms.forEach(d => { const w = width * subjects[s][d].length / cnt;
+    subjects[s][d].forEach(n => {
+      const th = a + w*(0.1 + 0.8*hash(n.id,1)), r = 0.28 + 0.72*Math.sqrt(hash(n.id,2));
+      const age = n.a0 + Math.min(1.5, (n.a1-n.a0)) * hash(n.id,3);
+      n.x = Math.cos(th)*r; n.z = Math.sin(th)*r; n.y = (age - 8.5) / 6;
+    });
+    a += w; });
+  ang += width + GAP;
+});
+
+// ---- state
+const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+let W=0,H=0,DPR=1, yaw=0.6, pitch=0.35, zoom=1, mode="dio", onlyDio=false, spin=true, hidden=new Set(), sel=null, hl=null, hover=null, query="";
+function resize(){ DPR = window.devicePixelRatio||1; W = innerWidth; H = innerHeight; cv.width = W*DPR; cv.height = H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+addEventListener("resize", resize); resize();
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+function ancestors(n){ const s = new Set([n.i]), st = [n.i]; while (st.length){ for (const [p] of N[st.pop()].pre) if (!s.has(p)) { s.add(p); st.push(p); } } return s; }
+
+function visible(n){ return !hidden.has(n.subject) && (!onlyDio || PASSED.has(n.st)); }
+function color(n){
+  if (mode === "subj") return SCOL[n.subject];
+  return n.st ? STATUS[n.st].c : css("--dim");
+}
+
+function project(){
+  const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+  const S = Math.min(W,H) * 0.36 * zoom, cam = 3.2;
+  const ox = (W > 900 ? 120 : 0);
+  for (const n of N){
+    const x1 = n.x*cy - n.z*sy, z1 = n.x*sy + n.z*cy;
+    const y2 = n.y*cp - z1*sp, z2 = n.y*sp + z1*cp;
+    const f = cam / (cam + z2);
+    n.sx = W/2 + ox + x1*S*f; n.sy = H/2 - y2*S*f; n.f = f; n.d = z2;
+  }
+}
+
+function draw(){
+  if (spin && !dragging && !sel) yaw += 0.0016;
+  project();
+  ctx.clearRect(0,0,W,H);
+  const ec = css("--edge"), q = query;
+  // edges
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = `rgba(${ec},${hl ? 0.03 : 0.05})`;
+  ctx.beginPath();
+  for (const [t,p] of D.edges){ const a=N[t], b=N[p]; if (!visible(a)||!visible(b)) continue; if (hl && hl.has(t) && hl.has(p)) continue; ctx.moveTo(a.sx,a.sy); ctx.lineTo(b.sx,b.sy); }
+  ctx.stroke();
+  if (hl){
+    ctx.lineWidth = 1.2; ctx.strokeStyle = `rgba(${ec},0.45)`; ctx.beginPath();
+    for (const [t,p] of D.edges) if (hl.has(t) && hl.has(p)) { ctx.moveTo(N[t].sx,N[t].sy); ctx.lineTo(N[p].sx,N[p].sy); }
+    ctx.stroke();
+  }
+  // nodes back to front
+  const order = N.filter(visible).sort((a,b) => b.d - a.d);
+  for (const n of order){
+    const match = q && (n.name.toLowerCase().includes(q) || n.domain.toLowerCase().includes(q));
+    const dimmed = (hl && !hl.has(n.i)) || (q && !match);
+    const marked = PASSED.has(n.st);
+    let r = (1.6 + Math.min(n.cen*40, 3.2)) * n.f * Math.sqrt(zoom);
+    if (marked && mode === "dio") r *= 1.35;
+    ctx.globalAlpha = dimmed ? 0.12 : (mode==="dio" && !marked && !hl ? 0.55 : 0.95);
+    ctx.fillStyle = color(n);
+    ctx.beginPath(); ctx.arc(n.sx, n.sy, Math.max(r,1), 0, 7); ctx.fill();
+    if (!dimmed && marked && mode === "subj"){ ctx.lineWidth = 1.5; ctx.strokeStyle = css("--ink"); ctx.stroke(); }
+    if (n === sel || n === hover || (match && q.length > 2)){ ctx.globalAlpha = 1; ctx.lineWidth = 2; ctx.strokeStyle = css("--accent"); ctx.beginPath(); ctx.arc(n.sx,n.sy,r+3,0,7); ctx.stroke(); }
+  }
+  ctx.globalAlpha = 1;
+  // age axis
+  ctx.fillStyle = css("--muted"); ctx.font = "11px system-ui";
+  for (const age of [4,6,8,10,12]){ const y = (age-8.5)/6, y2 = y*Math.cos(pitch), f = 3.2/(3.2 + y*Math.sin(pitch));
+    const S = Math.min(W,H)*0.36*zoom; ctx.fillText(`อายุ ${age}`, W/2 + (W>900?120:0) - 1.15*S*f, H/2 - y2*S*f); }
+  requestAnimationFrame(draw);
+}
+
+// ---- interaction
+let dragging = false, moved = 0, lx = 0, ly = 0;
+cv.addEventListener("pointerdown", e => { dragging = true; moved = 0; lx = e.clientX; ly = e.clientY; cv.setPointerCapture(e.pointerId); cv.classList.add("drag"); });
+cv.addEventListener("pointermove", e => {
+  if (dragging){ const dx = e.clientX-lx, dy = e.clientY-ly; moved += Math.abs(dx)+Math.abs(dy);
+    yaw += dx*0.006; pitch = Math.max(-1.3, Math.min(1.3, pitch + dy*0.006)); lx = e.clientX; ly = e.clientY; return; }
+  hover = pick(e.clientX, e.clientY); showTip(hover, e);
+});
+cv.addEventListener("pointerup", e => { dragging = false; cv.classList.remove("drag"); if (moved < 6) select(pick(e.clientX, e.clientY)); });
+cv.addEventListener("pointerleave", () => { hover = null; tip.style.display = "none"; });
+cv.addEventListener("wheel", e => { e.preventDefault(); zoom = Math.max(0.5, Math.min(6, zoom * Math.exp(-Math.max(-60, Math.min(60, e.deltaY))*0.002))); }, {passive:false});
+cv.addEventListener("dblclick", () => { zoom = 1; pitch = 0.35; select(null); });
+
+function pick(x, y){
+  let best = null, bd = 100;
+  for (const n of N){ if (!visible(n)) continue; const d = (n.sx-x)**2 + (n.sy-y)**2; if (d < bd){ bd = d; best = n; } }
+  return best;
+}
+const tip = document.getElementById("tip");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pill = st => st ? `<span class="pill" style="background:${STATUS[st].c}">${STATUS[st].th}</span>` : `<span class="pill" style="background:var(--dim);color:var(--ink)">ยังไม่มีข้อมูล</span>`;
+function showTip(n, e){
+  if (!n){ tip.style.display = "none"; return; }
+  tip.innerHTML = `<b>${esc(n.name)}</b><br><span class="sub">${esc(n.subject)} · ${esc(n.domain)} · อายุ ${n.a0}–${n.a1}</span><br>${pill(n.st)}`;
+  tip.style.display = "block";
+  tip.style.left = Math.min(e.clientX + 14, W - 290) + "px"; tip.style.top = (e.clientY + 14) + "px";
+}
+
+const panel = document.getElementById("panel");
+function select(n){
+  sel = n; hl = n ? ancestors(n) : null;
+  if (!n){ panel.style.display = "none"; return; }
+  const anc = [...hl].filter(i => i !== n.i).map(i => N[i]);
+  const done = anc.filter(a => PASSED.has(a.st)), todo = anc.filter(a => !PASSED.has(a.st)).sort((a,b) => a.a0 - b.a0);
+  const direct = n.pre.map(([p,h]) => N[p]);
+  const next = n.post.map(i => N[i]).sort((a,b) => a.a0 - b.a0);
+  const li = a => `<li data-i="${a.i}"><i class="dot" style="background:${a.st?STATUS[a.st].c:"var(--dim)"};display:inline-block;margin-right:5px"></i>${esc(a.name)} <span class="sub">(${a.a0}–${a.a1})</span></li>`;
+  panel.innerHTML = `<button class="close" id="x">×</button><h2>${esc(n.name)}</h2>
+    <div class="sub">${esc(n.subject)} · ${esc(n.domain)} · อายุ ${n.a0}–${n.a1}</div>
+    <div style="margin:6px 0">${pill(n.st)}</div>
+    <div style="font-size:12.5px">${esc(n.desc)}</div>
+    <h3 style="font-size:13px;margin:12px 0 0">พื้นฐานทั้งหมดที่ต้องผ่านก่อน: ${anc.length} หัวข้อ</h3>
+    ${anc.length ? `<div class="meter"><span style="width:${done.length/anc.length*100}%"></span></div><div class="sub">Dio ผ่าน/กำลังเรียนแล้ว ${done.length}/${anc.length}</div>` : ""}
+    ${todo.length ? `<div style="font-size:12.5px;margin-top:8px"><b>ยังไม่มีข้อมูลว่าผ่าน (${todo.length})</b></div><ul>${todo.slice(0,40).map(li).join("")}</ul>` : ""}
+    ${direct.length ? `<div style="font-size:12.5px;margin-top:8px"><b>พื้นฐานโดยตรง</b></div><ul>${direct.map(li).join("")}</ul>` : ""}
+    ${next.length ? `<div style="font-size:12.5px;margin-top:8px"><b>หัวข้อที่ต่อยอดจากเรื่องนี้ (${next.length})</b></div><ul>${next.slice(0,30).map(li).join("")}</ul>` : ""}
+    <div class="sub" style="margin-top:8px"><code>${esc(n.id)}</code></div>`;
+  panel.style.display = "block";
+  panel.querySelector("#x").onclick = () => select(null);
+  panel.querySelectorAll("li").forEach(el => el.onclick = () => select(N[+el.dataset.i]));
+}
+addEventListener("keydown", e => { if (e.key === "Escape") select(null); });
+
+// ---- controls
+const q = document.getElementById("q");
+q.oninput = () => { query = q.value.trim().toLowerCase(); };
+q.onkeydown = e => { if (e.key === "Enter" && query){ const m = N.filter(n => visible(n) && n.name.toLowerCase().includes(query)); if (m.length) select(m[0]); } };
+const mS = document.getElementById("mSubj"), mD = document.getElementById("mDio");
+mS.onclick = () => { mode = "subj"; mS.classList.add("on"); mD.classList.remove("on"); legends(); };
+mD.onclick = () => { mode = "dio"; mD.classList.add("on"); mS.classList.remove("on"); legends(); };
+document.getElementById("onlyDio").onchange = e => { onlyDio = e.target.checked; legends(); };
+document.getElementById("spin").onchange = e => { spin = e.target.checked; };
+document.getElementById("gen").textContent = `${N.length} topics · ${D.edges.length} links · updated ${D.generated}`;
+
+function legends(){
+  const vis = N.filter(n => !hidden.has(n.subject));
+  document.getElementById("lgStatus").innerHTML = mode === "dio"
+    ? Object.entries(STATUS).map(([k,v]) => `<label><i class="dot" style="background:${v.c}"></i>${v.th}<span class="n">${vis.filter(n => n.st===k).length}</span></label>`).join("")
+      + `<label><i class="dot" style="background:var(--dim)"></i>ยังไม่มีข้อมูล<span class="n">${vis.filter(n => !n.st).length}</span></label>`
+    : `<div class="sub">Dots with a ring are topics Dio has passed or is learning now</div>`;
+  document.getElementById("lgSubj").innerHTML = `<div class="sub">วิชา (คลิกเพื่อซ่อน/แสดง)</div>` + subjNames.map(s => {
+    const all = N.filter(n => n.subject === s), m = all.filter(n => PASSED.has(n.st)).length;
+    return `<label class="${hidden.has(s)?"off":""}" data-s="${esc(s)}"><i class="dot" style="background:${SCOL[s]}"></i>${esc(s)}<span class="n">${m ? m + " / " : ""}${all.length}</span></label>`; }).join("");
+  document.querySelectorAll("#lgSubj label").forEach(el => el.onclick = () => { const s = el.dataset.s; hidden.has(s) ? hidden.delete(s) : hidden.add(s); legends(); });
+}
+legends();
+const body = document.getElementById("body"), tg = document.getElementById("tg");
+function fold(min){ body.style.display = min ? "none" : ""; tg.textContent = min ? "▸" : "▾"; }
+document.getElementById("ttl").onclick = () => fold(body.style.display !== "none");
+if (innerWidth < 900) fold(true);
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

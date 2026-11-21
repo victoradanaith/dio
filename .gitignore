@@ -1,0 +1,12 @@
+# personal data: never commit (repo is public)
+school-reports/
+exam-materials/
+tracker/progress.json
+tracker/dashboard.html
+tracker/graph.html
+Dio_CA1_Revision_Guide.md
+
+# local
+.claude/
+.DS_Store
+__pycache__/

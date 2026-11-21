@@ -1,0 +1,4 @@
+source: https://github.com/withmarbleapp/os-taxonomy
+commit: acac33d2a23bef7d60c462da2cd8ef124c7faa2a (2026-11-19)
+license: CC BY-SA 4.0 (LICENSE-CONTENT), (c) Marble
+files: data/topics.json, dependencies.json, clusters.json, manifest.json

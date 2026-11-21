@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dio Learning Map</title>
+<style>
+:root{
+  --bg:#f7f6f2;--card:#ffffff;--ink:#1d1d1b;--muted:#6b6a65;--line:#e4e2db;
+  --s-not:#c9c7bf;--s-intro:#7aa7e0;--s-prac:#e7a83b;--s-secure:#3f9b6b;--s-review:#d0564b;
+  --chip:#efede7;--accent:#2f5d9a;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#161615;--card:#21211f;--ink:#ecebe6;--muted:#a09e97;--line:#353430;
+  --s-not:#55534d;--s-intro:#5b8fd1;--s-prac:#d4972c;--s-secure:#4bb07c;--s-review:#e06a5f;
+  --chip:#2c2b28;--accent:#8db4ea;}}
+:root[data-theme="dark"]{
+  --bg:#161615;--card:#21211f;--ink:#ecebe6;--muted:#a09e97;--line:#353430;
+  --s-not:#55534d;--s-intro:#5b8fd1;--s-prac:#d4972c;--s-secure:#4bb07c;--s-review:#e06a5f;
+  --chip:#2c2b28;--accent:#8db4ea;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Sukhumvit Set","Noto Sans Thai",system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:26px;margin:0 0 2px}
+h2{font-size:18px;margin:32px 0 10px}
+.sub{color:var(--muted);font-size:13px}
+.subjects{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:18px}
+.subj{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer}
+.subj.on{outline:2px solid var(--accent)}
+.subj b{font-size:15px}
+.bar{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:8px 0 4px;background:var(--s-not)}
+.bar span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-top:10px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card h3{font-size:15px;margin:0 0 2px}
+.meta{font-size:12px;color:var(--muted)}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;color:#fff;white-space:nowrap}
+.card ul{margin:8px 0 0;padding-left:18px;font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.chip{font-size:11.5px;background:var(--chip);border-radius:6px;padding:1px 6px}
+.chip.warn{box-shadow:inset 0 0 0 1px var(--s-review)}
+.row{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+details summary{cursor:pointer;font-size:12.5px;color:var(--accent);margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+td,th{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px}
+.tablewrap{overflow-x:auto}
+.empty{color:var(--muted);font-size:13px;padding:10px 0}
+.cl{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Dio: แผนที่การเรียน</h1>
+  <div class="sub" id="hdr"></div>
+  <div style="margin-top:6px"><a href="graph.html" style="color:var(--accent)">ดูแผนที่หัวข้อแบบ 3D (graph) →</a></div>
+  <div class="subjects" id="subjects"></div>
+  <div class="legend" id="legend"></div>
+
+  <h2>ผลการเรียน (สมุดพก)</h2>
+  <div id="reports"></div>
+
+  <h2>กำลังเรียนอยู่ (จากหลักสูตร SSIS)</h2>
+  <div class="grid" id="tracked"></div>
+
+  <h2>พื้นฐานที่ควรเช็ค</h2>
+  <div class="sub">Hard prerequisites (in the taxonomy) of what Dio is learning now that haven't been checked yet. Check these first: if a foundation is weak, the new topic will be hard too.</div>
+  <div class="grid" id="check" style="margin-top:10px"></div>
+
+  <h2>พร้อมเรียนต่อ</h2>
+  <div class="sub">Every hard prerequisite is already at "กำลังฝึก" or "ทำได้แล้ว"</div>
+  <div class="grid" id="ready" style="margin-top:10px"></div>
+
+  <h2>บันทึกล่าสุด</h2>
+  <div class="tablewrap"><table id="log"></table></div>
+
+  <h2>ภาพรวมวัยนี้ (สรุปจาก Marble)</h2>
+  <div id="clusters"></div>
+
+  <p class="sub" style="margin-top:40px">Taxonomy: Marble os-taxonomy (CC BY-SA 4.0). Thai/Mandarin topics are this project's own extension. Update with <code>python3 tracker/dio.py log …</code> then <code>build</code>.</p>
+</div>
+<script>
+const D = /*__DATA__*/null;
+const S = ["not_started","introduced","practising","secure","review"];
+const COL = {not_started:"var(--s-not)",introduced:"var(--s-intro)",practising:"var(--s-prac)",secure:"var(--s-secure)",review:"var(--s-review)"};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pill = s => `<span class="pill" style="background:${COL[s]}">${esc(D.statusTh[s])}</span>`;
+let filter = null;
+
+document.getElementById("hdr").textContent =
+  `${D.student.school} ${D.student.level} · ${D.student.year} · ${D.student.classes.join(", ")} · updated ${D.generated}`;
+document.getElementById("legend").innerHTML = S.map(s => `<span><i class="dot" style="background:${COL[s]}"></i>${D.statusTh[s]}</span>`).join("");
+
+function subjects(){
+  const by = {};
+  D.tracked.forEach(t => { (by[t.subject] ??= []).push(t); });
+  document.getElementById("subjects").innerHTML = Object.entries(by).map(([sub, ts]) => {
+    const n = ts.length, segs = S.map(s => [s, ts.filter(t => t.status === s).length]).filter(x => x[1]);
+    const secure = ts.filter(t => t.status === "secure").length;
+    return `<div class="subj ${filter===sub?"on":""}" data-s="${esc(sub)}"><b>${esc(sub)}</b>
+      <div class="bar">${segs.map(([s,c]) => `<span style="width:${c/n*100}%;background:${COL[s]}"></span>`).join("")}</div>
+      <div class="meta">${secure}/${n} ทำได้แล้ว</div></div>`;
+  }).join("");
+  document.querySelectorAll(".subj").forEach(el => el.onclick = () => { filter = filter === el.dataset.s ? null : el.dataset.s; render(); });
+}
+
+function card(t, extra=""){
+  const units = t.units.map(u => `<span class="chip">📘 ${esc(u.assessment || u.id)}</span>`).join("");
+  const pre = t.prereqs.length ? `<details><summary>พื้นฐาน ${t.prereqs.length} เรื่อง</summary><div class="chips">${
+    t.prereqs.map(p => `<span class="chip ${p.strength==="hard"&&p.status==="not_started"?"warn":""}" title="${esc(p.strength)}"><i class="dot" style="background:${COL[p.status]}"></i>${esc(p.name)}</span>`).join("")}</div></details>` : "";
+  return `<div class="card"><div class="row"><div><h3>${esc(t.name)}</h3>
+    <div class="meta">${esc(t.subject)} · ${esc(t.domain)} · age ${t.age[0]}–${t.age[1]}${t.ext?" · ext":""}</div></div>${pill(t.status)}</div>
+    ${extra}
+    <ul>${t.evidence.map(e => `<li>${esc(e)}</li>`).join("")}</ul>
+    <div class="chips">${units}</div>${pre}
+    <div class="meta" style="margin-top:6px"><code>${esc(t.id)}</code>${t.updated?" · "+esc(t.updated):""}</div></div>`;
+}
+
+function render(){
+  subjects();
+  const f = xs => filter ? xs.filter(t => t.subject === filter) : xs;
+  const order = {review:0,practising:1,introduced:2,not_started:3,secure:4};
+  const tr = f(D.tracked).slice().sort((a,b) => order[a.status]-order[b.status]);
+  document.getElementById("tracked").innerHTML = tr.map(t => card(t)).join("") || `<div class="empty">—</div>`;
+  document.getElementById("check").innerHTML = f(D.check).map(t => card(t, `<div class="meta" style="margin-top:4px">needed by: ${esc(t.neededBy.join(", "))}</div>`)).join("") || `<div class="empty">ไม่มี</div>`;
+  document.getElementById("ready").innerHTML = f(D.ready).map(t => card(t)).join("") || `<div class="empty">Nothing yet. Mark topics as "กำลังฝึก" or "ทำได้แล้ว" first, and the next topics will show up here.</div>`;
+  document.getElementById("log").innerHTML = `<tr><th>วันที่</th><th>หัวข้อ</th><th>สถานะ</th><th>ที่มา / หมายเหตุ</th></tr>` +
+    D.log.map(e => `<tr><td>${esc(e.date)}</td><td>${esc(D.names[e.topic] || e.topic)}</td><td>${pill(e.status)}</td><td>${esc(e.source)}${e.note?" · "+esc(e.note):""}</td></tr>`).join("");
+  const cl = filter ? D.clusters.filter(c => c.subject === filter) : D.clusters;
+  document.getElementById("clusters").innerHTML = cl.map(c => `<p class="cl"><b style="color:var(--ink)">${esc(c.subject)} · ${esc(c.domain)}</b> (${c.ageRangeStart}+): ${esc(c.summary)}</p>`).join("") || `<div class="empty">—</div>`;
+}
+render();
+document.getElementById("reports").innerHTML = D.reports.slice().reverse().map(r => `
+  <div class="card" style="margin-bottom:12px"><div class="row"><h3>${esc(r.id)} · Term ${esc(r.term.replace("T",""))}</h3><span class="meta">${esc(r.date)}</span></div>
+  <div class="tablewrap"><table style="margin-top:8px"><tr>${r.core.map(c => `<th>${esc(c.subject)}</th>`).join("")}</tr>
+  <tr>${r.core.map(c => `<td><b>${c.mark}</b> ${esc(c.grade)}</td>`).join("")}</tr></table></div>
+  <div class="chips">${Object.entries(r.nonCore).concat(Object.entries(r.competencies)).map(([k,v]) => `<span class="chip ${v!=="E"?"warn":""}">${esc(k)}: ${esc(v)}</span>`).join("")}</div>
+  <p class="cl" style="margin-bottom:0">${esc(r.comment)}</p><div class="meta">${esc(r.legend)}</div></div>`).join("") || `<div class="empty">—</div>`;
+</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+{
+  "note": "Topics the Marble taxonomy doesn't cover (Thai, Mandarin Pinyin), written in the same format as taxonomy/topics.json. IDs start with x_ so they never collide with Marble's mt_ IDs. 'prerequisites' uses the same edge format as dependencies.json.",
+  "topics": [
+    {
+      "id": "x_th_consonants",
+      "type": "LANGUAGE", "subject": "Thai", "domain": "Phonics & Writing",
+      "name": "พยัญชนะไทย ๔๔ ตัว",
+      "description": "Recognise, name, and write all 44 Thai consonants",
+      "evidence": ["อ่านชื่อพยัญชนะได้ครบ (ก ไก่ … ฮ นกฮูก)", "เขียนพยัญชนะได้ถูกหัว ถูกทิศทาง", "บอกเสียงพยัญชนะต้นได้"],
+      "ageRangeStart": 5, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_th_vowel_e",
+      "type": "LANGUAGE", "subject": "Thai", "domain": "Phonics & Writing",
+      "name": "สระ เ- (เขียนและประสมคำ)",
+      "description": "Write สระ เ- correctly and place it in front of a consonant to read and write words (เก เอ เจ เต เบ เร เม เห เผ เข). ทักษะภาษา เล่ม ๑ pp. 54–55",
+      "evidence": ["เขียนสระ เ- ไว้หน้าพยัญชนะได้ถูกตำแหน่ง", "อ่านคำ เก เอ เจ เต เบ เร เม เห เผ เข ได้ถูก", "เขียนตามคำบอกคำที่มีสระ เ- ได้"],
+      "ageRangeStart": 6, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_th_numerals",
+      "type": "REPRESENTATIONAL", "subject": "Thai", "domain": "Numbers & Classifiers",
+      "name": "เลขไทย ๐–๑๐",
+      "description": "Read and write Thai numerals ๐–๑๐ and match them to Arabic numerals",
+      "evidence": ["อ่านเลขไทย ๐–๑๐ ได้", "เขียนเลขไทยได้ถูกรูป", "จับคู่เลขไทยกับเลขอารบิกได้"],
+      "ageRangeStart": 6, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_th_classifiers",
+      "type": "LANGUAGE", "subject": "Thai", "domain": "Numbers & Classifiers",
+      "name": "ลักษณนาม",
+      "description": "Use the right classifier with a number: ดอก แท่ง คน ตัว ผล ใบ คู่ คัน เรือน",
+      "evidence": ["เลือกลักษณนามให้ถูกกับคำนาม (ดินสอ ๒ แท่ง, รถ ๑ คัน)", "พูด/เขียน จำนวน + ลักษณนาม ได้ถูกลำดับ", "ใช้ได้ครบ ๙ คำ: ดอก แท่ง คน ตัว ผล ใบ คู่ คัน เรือน"],
+      "ageRangeStart": 6, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_th_reading_pasapatee",
+      "type": "LANGUAGE", "subject": "Thai", "domain": "Reading",
+      "name": "อ่านออกเสียง ภาษาพาที ป.1",
+      "description": "Read the ภาษาพาที ป.1 lessons aloud accurately; Term 1 = บทที่ 1–2 (reading test pp. 17–18)",
+      "evidence": ["อ่านออกเสียงบทที่ 1–2 ได้ไม่ติดขัด", "อ่านคำในแบบทดสอบ หน้า 17–18 ได้ถูก", "ตอบคำถามง่ายๆ จากเรื่องที่อ่านได้"],
+      "ageRangeStart": 6, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_th_dictation",
+      "type": "PROCEDURAL", "subject": "Thai", "domain": "Phonics & Writing",
+      "name": "เขียนตามคำบอก",
+      "description": "Write words the teacher dictates (purple notebook)",
+      "evidence": ["เขียนตามคำบอกได้ถูก ≥ 8/10 คำ", "สะกดสระและพยัญชนะถูกตำแหน่ง", "ลายมืออ่านออก อยู่ในบรรทัด"],
+      "ageRangeStart": 6, "ageRangeEnd": 7
+    },
+
+    {
+      "id": "x_zh_finals",
+      "type": "LANGUAGE", "subject": "Mandarin", "domain": "Pinyin",
+      "name": "单韵母 a o e i u ü",
+      "description": "Read and write the six simple finals",
+      "evidence": ["读出 a o e i u ü", "写出单韵母", "听音找韵母"],
+      "ageRangeStart": 5, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_zh_tones",
+      "type": "LANGUAGE", "subject": "Mandarin", "domain": "Pinyin",
+      "name": "四声 (tones)",
+      "description": "Hear, say, and mark the four tones on a final",
+      "evidence": ["读出 ā á ǎ à", "听音标声调", "标调标在正确的韵母上"],
+      "ageRangeStart": 5, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_zh_initials_basic",
+      "type": "LANGUAGE", "subject": "Mandarin", "domain": "Pinyin",
+      "name": "声母 b p m f d t n l g k h",
+      "description": "Read and write the first group of initials and blend them with finals",
+      "evidence": ["读出声母", "拼读 声母+韵母 (bā, mǎ, hē…)", "听音写声母"],
+      "ageRangeStart": 5, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_zh_jqx",
+      "type": "LANGUAGE", "subject": "Mandarin", "domain": "Pinyin",
+      "name": "声母 j q x",
+      "description": "Read j q x and the ü-drops-its-dots rule (ju, qu, xu). Textbook p. 31",
+      "evidence": ["读出 j q x", "知道 j q x + ü 去掉两点", "拼读 p.31 的词语"],
+      "ageRangeStart": 6, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_zh_zcs",
+      "type": "LANGUAGE", "subject": "Mandarin", "domain": "Pinyin",
+      "name": "平舌音 z c s",
+      "description": "Read the flat-tongue initials z c s. Textbook p. 40: zì, zìjǐ, zǔwū, cā, cì, sì, sījī, zǐsè",
+      "evidence": ["读出 z c s", "拼读 p.40 的词语", "听音写 z / c / s"],
+      "ageRangeStart": 6, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_zh_zhchshr",
+      "type": "LANGUAGE", "subject": "Mandarin", "domain": "Pinyin",
+      "name": "翘舌音 zh ch sh r",
+      "description": "Read the curled-tongue initials zh ch sh r. Textbook p. 41: zhǐ, zhū, zhīzhū, làzhú, chī, chǐ, qìchē, chūqù, shí, bāshì, dúshū, rì, rè, rìlì",
+      "evidence": ["读出 zh ch sh r", "拼读 p.41 的词语（跟录音）", "听音写 zh / ch / sh / r"],
+      "ageRangeStart": 6, "ageRangeEnd": 7
+    },
+    {
+      "id": "x_zh_flat_vs_curled",
+      "type": "LANGUAGE", "subject": "Mandarin", "domain": "Pinyin",
+      "name": "分辨 z/zh c/ch s/sh",
+      "description": "Hear and say the difference between flat and curled initials",
+      "evidence": ["听音分辨 zi / zhi, ci / chi, si / shi", "读对 sì 和 shí", "听写时不混淆"],
+      "ageRangeStart": 6, "ageRangeEnd": 8
+    },
+    {
+      "id": "x_zh_two_syllable",
+      "type": "LANGUAGE", "subject": "Mandarin", "domain": "Pinyin",
+      "name": "拼读两音节词",
+      "description": "Blend and read two-syllable pinyin words with tones (zìjǐ, sījī, qìchē, rìlì)",
+      "evidence": ["拼读两音节词，声调正确", "看拼音读出词语", "听音写出两音节词的拼音"],
+      "ageRangeStart": 6, "ageRangeEnd": 8
+    }
+  ],
+  "prerequisites": [
+    {"topicId": "x_th_vowel_e", "prerequisiteId": "x_th_consonants", "strength": "hard", "reason": "You can only put เ- in front of a consonant you already know"},
+    {"topicId": "x_th_dictation", "prerequisiteId": "x_th_vowel_e", "strength": "soft", "reason": "Dictation words in Term 1 use สระ เ-"},
+    {"topicId": "x_th_dictation", "prerequisiteId": "x_th_consonants", "strength": "hard", "reason": "You need the consonants before you can write words"},
+    {"topicId": "x_th_reading_pasapatee", "prerequisiteId": "x_th_consonants", "strength": "hard", "reason": "Reading needs consonant recognition"},
+    {"topicId": "x_th_classifiers", "prerequisiteId": "x_th_numerals", "strength": "soft", "reason": "The exercises write the numbers in Thai numerals"},
+    {"topicId": "x_th_numerals", "prerequisiteId": "mt_fR0UtsSREU", "strength": "soft", "reason": "Knowing the Arabic numerals helps when matching them to Thai numerals"},
+
+    {"topicId": "x_zh_initials_basic", "prerequisiteId": "x_zh_finals", "strength": "hard", "reason": "Blending needs the finals"},
+    {"topicId": "x_zh_initials_basic", "prerequisiteId": "x_zh_tones", "strength": "hard", "reason": "Every syllable carries a tone"},
+    {"topicId": "x_zh_jqx", "prerequisiteId": "x_zh_initials_basic", "strength": "hard", "reason": "Comes after the first group of initials in the textbook"},
+    {"topicId": "x_zh_zcs", "prerequisiteId": "x_zh_initials_basic", "strength": "hard", "reason": "Comes after the first group of initials in the textbook"},
+    {"topicId": "x_zh_zhchshr", "prerequisiteId": "x_zh_zcs", "strength": "hard", "reason": "zh ch sh are taught in contrast with z c s"},
+    {"topicId": "x_zh_flat_vs_curled", "prerequisiteId": "x_zh_zcs", "strength": "hard", "reason": "You need both groups first"},
+    {"topicId": "x_zh_flat_vs_curled", "prerequisiteId": "x_zh_zhchshr", "strength": "hard", "reason": "You need both groups first"},
+    {"topicId": "x_zh_two_syllable", "prerequisiteId": "x_zh_tones", "strength": "hard", "reason": "Each syllable needs the right tone"},
+    {"topicId": "x_zh_two_syllable", "prerequisiteId": "x_zh_initials_basic", "strength": "hard", "reason": "Blending single syllables comes first"}
+  ]
+}
