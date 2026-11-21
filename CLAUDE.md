@@ -32,6 +32,7 @@ https://claude.ai/artifact/KoxzgGFd19Zz5aRMHbZFzu: `build` also writes `tracker/
 ## Daily quiz
 - Page (private, `db` capability): https://claude.ai/artifact/BMng2aatzqUFZxLUSFiunE from `tracker/quiz.html`. Collection `quizzes`, doc id = date: `{date, items:[{topicId, subject, topicName, question, parentHow, answer, passIf}], results:{"0":"pass|partial|fail"}, note}`. The parent taps the results on the page.
 - Scheduled task `dio-daily-quiz` (07:00 daily): records the previous days' results (`quiz-record`), rebuilds and republishes the dashboard, then picks topics (`quiz-pick`) and writes 3 new items to the db (`quiz-asked`).
+- GitHub Pages copy: https://victoradanaith.github.io/dio/quiz/ (same passcode). `dio.py quiz-docs` builds it from a db export (`ArtifactData list … out_dir=tracker/publish/quizdb`): questions from the last 14 days only, **no results or notes**. Taps on that page stay on the phone (localStorage); the "คัดลอกผล" button gives text the parent can paste to Claude, which then records it with `quiz-record`. The daily task commits and pushes only `docs/quiz/index.html`.
 - How topics are chosen: inferred "likely passed" topics first, then secure > practising > introduced; spread across subjects; a topic isn't asked again within 14 days. Results: pass → secure (practising needs 2 passes on different days), partial → practising, fail → review/introduced.
 
 ## Public page (GitHub Pages, `docs/`)
